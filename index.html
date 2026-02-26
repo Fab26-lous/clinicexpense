@@ -1,456 +1,211 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Clinic Expenses</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { 
-            font-family: system-ui, -apple-system, sans-serif;
-            background: #f0f2f5;
-            padding: 16px;
-        }
-        .container { max-width: 600px; margin: 0 auto; }
-        
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        h2 { font-size: 1.5rem; margin-bottom: 16px; color: #1a1a1a; }
-        h3 { font-size: 1.2rem; margin-bottom: 12px; color: #4a4a4a; }
-        
-        input, select, button {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            font-size: 16px;
-        }
-        
-        button {
-            background: #0066cc;
-            color: white;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
-        button:hover { background: #0052a3; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-        
-        .stat-box {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 12px;
-            text-align: center;
-        }
-        
-        .stat-label { font-size: 0.9rem; color: #666; margin-bottom: 4px; }
-        .stat-value { font-size: 1.5rem; font-weight: bold; color: #0066cc; }
-        
-        .transaction {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .transaction:last-child { border-bottom: none; }
-        
-        .badge {
-            background: #e3f2fd;
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            color: #0066cc;
-        }
-        
-        .alert {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            display: none;
-        }
-        
-        .alert.show { display: block; }
-        .alert.success { background: #d4edda; color: #155724; }
-        .alert.error { background: #f8d7da; color: #721c24; }
-        
-        .login-box {
-            background: white;
-            padding: 24px;
-            border-radius: 16px;
-            margin-top: 50px;
-        }
-        
-        .hidden { display: none; }
-        
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        
-        .tab {
-            flex: 1;
-            padding: 10px;
-            background: #f0f0f0;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        
-        .tab.active {
-            background: #0066cc;
-            color: white;
-        }
-    </style>
-</head>
-<body>
-    <div class="container" id="app">
-        <!-- LOGIN SCREEN -->
-        <div id="loginScreen">
-            <div class="login-box">
-                <h2 style="text-align: center;">Clinic Expense Tracker</h2>
-                <div id="loginAlert" class="alert"></div>
-                <input type="text" id="username" placeholder="Username" value="cashier">
-                <input type="password" id="password" placeholder="Password" value="clinic123">
-                <button onclick="login()">Login</button>
-                <div style="text-align: center; margin-top: 16px; color: #666; font-size: 0.9rem;">
-                    Demo: cashier/clinic123 or admin/admin123
-                </div>
-            </div>
-        </div>
-        
-        <!-- MAIN APP -->
-        <div id="mainScreen" class="hidden">
-            <!-- Header -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h2>💰 Expenses</h2>
-                <div>
-                    <span id="userDisplay" style="margin-right: 12px;"></span>
-                    <button onclick="logout()" style="width: auto; padding: 8px 16px;">Logout</button>
-                </div>
-            </div>
-            
-            <!-- Alert -->
-            <div id="mainAlert" class="alert"></div>
-            
-            <!-- Quick Stats -->
-            <div class="card">
-                <div class="row">
-                    <div class="stat-box">
-                        <div class="stat-label">Pocket Money</div>
-                        <div class="stat-value" id="pocketBalance">₱0</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Sales Used</div>
-                        <div class="stat-value" id="salesUsed">₱0</div>
-                    </div>
-                </div>
-                <div class="row" style="margin-top: 8px;">
-                    <div class="stat-box">
-                        <div class="stat-label">Added Today</div>
-                        <div class="stat-value" id="pocketAdded">₱0</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-label">Spent Today</div>
-                        <div class="stat-value" id="pocketSpent">₱0</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tabs for different functions -->
-            <div class="tabs">
-                <button class="tab active" onclick="showTab('expense')">➕ Add Expense</button>
-                <button class="tab" onclick="showTab('pocket')" id="pocketTab">💵 Pocket Money</button>
-            </div>
-            
-            <!-- Add Expense Form -->
-            <div id="expenseTab" class="card">
-                <h3>Record Expense</h3>
-                <input type="text" id="expenseDesc" placeholder="What did you buy?">
-                <div class="row">
-                    <select id="expenseSource">
-                        <option value="POCKET">From Pocket Money</option>
-                        <option value="SALES">From Sales</option>
-                    </select>
-                    <input type="number" id="expenseAmount" placeholder="Amount" step="0.01">
-                </div>
-                <button onclick="addExpense()" id="expenseBtn">Save Expense</button>
-            </div>
-            
-            <!-- Pocket Money Form -->
-            <div id="pocketTab" class="card hidden">
-                <h3>Add Pocket Money</h3>
-                <select id="pocketType">
-                    <option value="OPENING">Opening Money (Start of Day)</option>
-                    <option value="TOPUP">Top-up</option>
-                </select>
-                <input type="number" id="pocketAmount" placeholder="Amount" step="0.01">
-                <input type="text" id="pocketNote" placeholder="Note (optional)">
-                <button onclick="addPocketMoney()" id="pocketBtn">Add to Pocket</button>
-            </div>
-            
-            <!-- Today's Transactions -->
-            <div class="card">
-                <h3>Today's Transactions</h3>
-                <div id="transactions">
-                    <div style="text-align: center; color: #666; padding: 20px;">
-                        Loading...
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    <script>
-        // CONFIG - UPDATE THIS AFTER DEPLOYING APPS SCRIPT
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzD0hvOKWwxERXPgidj9LVxhxfg8ykWKiHt1Wnt3JVERaWV4YzFyaz7UWdr-ZfPzna/exec';
-        
-        // Simple user database
-        const USERS = {
-            'cashier': { password: 'clinic123', role: 'Cashier', name: 'Maria' },
-            'admin': { password: 'admin123', role: 'Admin', name: 'Dr. Santos' }
-        };
-        
-        let currentUser = null;
-        
-        // Login function
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const alert = document.getElementById('loginAlert');
-            
-            const user = USERS[username];
-            
-            if (user && user.password === password) {
-                currentUser = {
-                    username: username,
-                    role: user.role,
-                    name: user.name
-                };
-                
-                // Save session
-                localStorage.setItem('clinicUser', JSON.stringify(currentUser));
-                
-                // Show main screen
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('mainScreen').classList.remove('hidden');
-                document.getElementById('userDisplay').textContent = `${user.name} (${user.role})`;
-                
-                // Hide pocket tab for cashiers (optional - remove if cashiers need it)
-                // if (user.role === 'Cashier') {
-                //     document.getElementById('pocketTab').style.display = 'none';
-                // }
-                
-                loadToday();
-            } else {
-                alert.textContent = 'Invalid username or password';
-                alert.classList.add('show', 'error');
-            }
-        }
-        
-        function logout() {
-            localStorage.removeItem('clinicUser');
-            currentUser = null;
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('mainScreen').classList.add('hidden');
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-        }
-        
-        // Check for existing session
-        (function() {
-            const saved = localStorage.getItem('clinicUser');
-            if (saved) {
-                currentUser = JSON.parse(saved);
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('mainScreen').classList.remove('hidden');
-                document.getElementById('userDisplay').textContent = `${currentUser.name} (${currentUser.role})`;
-                loadToday();
-            }
-        })();
-        
-        // Tab switching
-        function showTab(tab) {
-            document.getElementById('expenseTab').classList.toggle('hidden', tab !== 'expense');
-            document.getElementById('pocketTab').classList.toggle('hidden', tab !== 'pocket');
-            
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-        }
-        
-        // Add expense
-        async function addExpense() {
-            const desc = document.getElementById('expenseDesc').value;
-            const source = document.getElementById('expenseSource').value;
-            const amount = document.getElementById('expenseAmount').value;
-            
-            if (!desc || !amount) {
-                showAlert('Please fill all fields', 'error');
-                return;
-            }
-            
-            const btn = document.getElementById('expenseBtn');
-            btn.disabled = true;
-            btn.textContent = 'Saving...';
-            
-            const result = await callScript({
-                action: 'add',
-                type: 'EXPENSE',
-                description: desc,
-                source: source,
-                amount: amount,
-                cashier: currentUser?.name || 'Unknown',
-                entryId: generateId()
-            });
-            
-            btn.disabled = false;
-            btn.textContent = 'Save Expense';
-            
-            if (result.success) {
-                showAlert('Expense saved!', 'success');
-                document.getElementById('expenseDesc').value = '';
-                document.getElementById('expenseAmount').value = '';
-                loadToday();
-            } else if (result.duplicate) {
-                showAlert('Already saved (duplicate)', 'error');
-            } else {
-                showAlert('Error: ' + (result.error || 'Unknown'), 'error');
-            }
-        }
-        
-        // Add pocket money
-        async function addPocketMoney() {
-            const type = document.getElementById('pocketType').value;
-            const amount = document.getElementById('pocketAmount').value;
-            const note = document.getElementById('pocketNote').value;
-            
-            if (!amount) {
-                showAlert('Please enter amount', 'error');
-                return;
-            }
-            
-            const btn = document.getElementById('pocketBtn');
-            btn.disabled = true;
-            btn.textContent = 'Saving...';
-            
-            const result = await callScript({
-                action: 'add',
-                type: type,
-                description: note || type,
-                amount: amount,
-                cashier: currentUser?.name || 'Unknown',
-                entryId: generateId()
-            });
-            
-            btn.disabled = false;
-            btn.textContent = 'Add to Pocket';
-            
-            if (result.success) {
-                showAlert('Pocket money added!', 'success');
-                document.getElementById('pocketAmount').value = '';
-                document.getElementById('pocketNote').value = '';
-                loadToday();
-            } else if (result.duplicate) {
-                showAlert('Already saved', 'error');
-            } else {
-                showAlert('Error: ' + (result.error || 'Unknown'), 'error');
-            }
-        }
-        
-        // Load today's data
-        async function loadToday() {
-            const result = await callScript({ action: 'today' });
-            
-            if (result.success) {
-                // Update stats
-                document.getElementById('pocketBalance').textContent = 
-                    '₱' + (result.summary.pocketBalance || 0).toFixed(2);
-                document.getElementById('salesUsed').textContent = 
-                    '₱' + (result.summary.salesUsed || 0).toFixed(2);
-                document.getElementById('pocketAdded').textContent = 
-                    '₱' + (result.summary.pocketAdded || 0).toFixed(2);
-                document.getElementById('pocketSpent').textContent = 
-                    '₱' + (result.summary.pocketSpent || 0).toFixed(2);
-                
-                // Show transactions
-                const transactions = result.transactions || [];
-                let html = '';
-                
-                if (transactions.length === 0) {
-                    html = '<div style="text-align: center; color: #666; padding: 20px;">No transactions today</div>';
-                } else {
-                    transactions.reverse().forEach(t => {
-                        const type = t.type === 'EXPENSE' ? '💸' : t.type === 'OPENING' ? '💰' : '➕';
-                        const color = t.type === 'EXPENSE' ? '#dc3545' : '#28a745';
-                        
-                        html += `
-                            <div class="transaction">
-                                <div>
-                                    <span style="font-weight: bold;">${type} ${t.desc || t.type}</span>
-                                    <div style="font-size: 0.8rem; color: #666;">
-                                        ${t.time} · ${t.cashier} 
-                                        ${t.source ? '· ' + t.source : ''}
-                                    </div>
-                                </div>
-                                <div style="font-weight: bold; color: ${color}">
-                                    ₱${parseFloat(t.amount).toFixed(2)}
-                                </div>
-                            </div>
-                        `;
-                    });
-                }
-                
-                document.getElementById('transactions').innerHTML = html;
-            }
-        }
-        
-        // Call Apps Script (NO CORS ISSUES)
-        async function callScript(data) {
-            const formData = new URLSearchParams();
-            Object.keys(data).forEach(key => formData.append(key, data[key]));
-            
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-                return await response.json();
-            } catch (err) {
-                console.error(err);
-                return { error: 'Network error' };
-            }
-        }
-        
-        // Helper functions
-        function generateId() {
-            return Date.now() + '-' + Math.random().toString(36).substr(2, 9);
-        }
-        
-        function showAlert(msg, type) {
-            const alert = document.getElementById('mainAlert');
-            alert.textContent = msg;
-            alert.className = 'alert show ' + type;
-            setTimeout(() => alert.classList.remove('show'), 3000);
-        }
-        
-        // Auto-refresh every 30 seconds
-        setInterval(() => {
-            if (currentUser) loadToday();
-        }, 30000);
-    </script>
-</body>
-</html>
+    body {
+        font-family: "Segoe UI", Roboto, -apple-system, sans-serif;
+        background: #f4f6f9;
+        padding: 24px;
+        color: #2c3e50;
+    }
+
+    .container {
+        max-width: 720px;
+        margin: 0 auto;
+    }
+
+    /* Header */
+    .app-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .app-title {
+        font-size: 1.6rem;
+        font-weight: 600;
+        color: #1e3a5f;
+    }
+
+    /* Cards */
+    .card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid #e6e9ef;
+    }
+
+    h3 {
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+        font-weight: 600;
+        color: #1e3a5f;
+    }
+
+    /* Inputs */
+    input, select {
+        width: 100%;
+        padding: 14px;
+        margin-bottom: 14px;
+        border: 1px solid #dcdfe6;
+        border-radius: 8px;
+        font-size: 15px;
+        background: #fafbfc;
+        transition: 0.2s;
+    }
+
+    input:focus, select:focus {
+        outline: none;
+        border-color: #1e3a5f;
+        background: #ffffff;
+    }
+
+    /* Buttons */
+    button {
+        width: 100%;
+        padding: 14px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .primary-btn {
+        background: #1e3a5f;
+        color: white;
+    }
+
+    .primary-btn:hover {
+        background: #162c47;
+    }
+
+    .secondary-btn {
+        background: #e9edf3;
+        color: #1e3a5f;
+    }
+
+    .secondary-btn:hover {
+        background: #d8dee8;
+    }
+
+    button:disabled {
+        background: #cfd6df;
+        cursor: not-allowed;
+    }
+
+    /* Grid */
+    .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    /* Stats */
+    .stat-box {
+        background: #f8fafc;
+        padding: 18px;
+        border-radius: 12px;
+        text-align: center;
+        border: 1px solid #e6e9ef;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 6px;
+    }
+
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 600;
+        color: #1e3a5f;
+    }
+
+    /* Tabs */
+    .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .tab {
+        flex: 1;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #dcdfe6;
+        background: #f5f7fa;
+        font-weight: 500;
+        cursor: pointer;
+    }
+
+    .tab.active {
+        background: #1e3a5f;
+        color: white;
+        border-color: #1e3a5f;
+    }
+
+    /* Transactions */
+    .transaction {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 0;
+        border-bottom: 1px solid #eef1f5;
+    }
+
+    .transaction:last-child {
+        border-bottom: none;
+    }
+
+    .transaction-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    .transaction-meta {
+        font-size: 0.8rem;
+        color: #7a869a;
+        margin-top: 4px;
+    }
+
+    /* Alerts */
+    .alert {
+        padding: 14px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        display: none;
+        font-size: 0.9rem;
+    }
+
+    .alert.show { display: block; }
+
+    .alert.success {
+        background: #e6f4ea;
+        color: #1e7e34;
+        border: 1px solid #c3e6cb;
+    }
+
+    .alert.error {
+        background: #fdecea;
+        color: #b02a37;
+        border: 1px solid #f5c6cb;
+    }
+
+    .login-box {
+        background: white;
+        padding: 32px;
+        border-radius: 14px;
+        margin-top: 60px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 600px) {
+        .row { grid-template-columns: 1fr; }
+    }
+</style>
