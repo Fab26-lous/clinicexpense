@@ -244,11 +244,12 @@
 </div>
 
 <script>
+
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzD0hvOKWwxERXPgidj9LVxhxfg8ykWKiHt1Wnt3JVERaWV4YzFyaz7UWdr-ZfPzna/exec';
 
 const USERS = {
-    cashier: { password: 'clinic123', role: 'Cashier' },
-    admin: { password: 'admin123', role: 'Admin' }
+    cashier: { password: 'clinic123', role: 'Cashier', name: 'Maria' },
+    admin: { password: 'admin123', role: 'Admin', name: 'Dr. Admin' }
 };
 
 let currentUser = null;
@@ -259,10 +260,10 @@ function login() {
     const user = USERS[u];
 
     if (user && user.password === p) {
-        currentUser = u;
+        currentUser = { username: u, name: user.name };
         loginScreen.classList.add("hidden");
         mainScreen.classList.remove("hidden");
-        userDisplay.textContent = u + " (" + user.role + ")";
+        userDisplay.textContent = user.name + " (" + user.role + ")";
         loadToday();
     } else {
         loginAlert.textContent = "Invalid login";
@@ -289,16 +290,124 @@ function showPocket() {
 }
 
 async function addExpense() {
-    alert("Connected to Apps Script when URL is added.");
+
+    const desc = expenseDesc.value;
+    const source = expenseSource.value;
+    const amount = expenseAmount.value;
+
+    if (!desc || !amount) {
+        showAlert("Fill all fields","error");
+        return;
+    }
+
+    const formData = new URLSearchParams();
+    formData.append("action","add");
+    formData.append("type","EXPENSE");
+    formData.append("description",desc);
+    formData.append("source",source);
+    formData.append("amount",amount);
+    formData.append("cashier",currentUser.name);
+
+    try {
+        const res = await fetch(SCRIPT_URL,{
+            method:"POST",
+            body:formData
+        });
+        const result = await res.json();
+
+        if(result.success){
+            showAlert("Expense Saved","success");
+            expenseDesc.value="";
+            expenseAmount.value="";
+            loadToday();
+        } else {
+            showAlert("Error saving","error");
+        }
+
+    } catch(err){
+        showAlert("Network error","error");
+    }
 }
 
-async function addPocketMoney() {
-    alert("Connected to Apps Script when URL is added.");
+async function addPocketMoney(){
+
+    const amount = pocketAmount.value;
+
+    if(!amount){
+        showAlert("Enter amount","error");
+        return;
+    }
+
+    const formData = new URLSearchParams();
+    formData.append("action","add");
+    formData.append("type","OPENING");
+    formData.append("amount",amount);
+    formData.append("cashier",currentUser.name);
+
+    try{
+        const res = await fetch(SCRIPT_URL,{
+            method:"POST",
+            body:formData
+        });
+
+        const result = await res.json();
+
+        if(result.success){
+            showAlert("Money Added","success");
+            pocketAmount.value="";
+            loadToday();
+        } else {
+            showAlert("Error saving","error");
+        }
+
+    } catch(err){
+        showAlert("Network error","error");
+    }
 }
 
-async function loadToday() {
-    // Placeholder until connected
+async function loadToday(){
+
+    try{
+        const res = await fetch(SCRIPT_URL,{
+            method:"POST",
+            body:new URLSearchParams({action:"today"})
+        });
+
+        const result = await res.json();
+
+        if(result.success){
+
+            pocketBalance.textContent = "TZS " + (result.summary.pocketBalance || 0);
+            salesUsed.textContent = "TZS " + (result.summary.salesUsed || 0);
+
+            let html="";
+
+            (result.transactions || []).forEach(t=>{
+                html += `
+                    <div class="transaction">
+                        <div>
+                            <div class="transaction-title">${t.desc || t.type}</div>
+                            <div class="transaction-meta">${t.time} · ${t.cashier}</div>
+                        </div>
+                        <div><strong>TZS ${t.amount}</strong></div>
+                    </div>
+                `;
+            });
+
+            transactions.innerHTML = html || "No transactions today";
+        }
+
+    } catch(err){
+        console.log(err);
+    }
 }
+
+function showAlert(msg,type){
+    mainAlert.textContent=msg;
+    mainAlert.className="alert show "+type;
+    setTimeout(()=>mainAlert.classList.remove("show"),3000);
+}
+
 </script>
 
 </body>
