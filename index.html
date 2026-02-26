@@ -214,18 +214,29 @@
         </div>
 
         <!-- Expense Form -->
-        <div id="expenseTab" class="card">
-            <h3>Record Expense</h3>
-            <input type="text" id="expenseDesc" placeholder="Description">
-            <div class="row">
-                <select id="expenseSource">
-                    <option value="POCKET">From Pocket</option>
-                    <option value="SALES">From Sales</option>
-                </select>
-                <input type="number" id="expenseAmount" placeholder="Amount">
-            </div>
-            <button class="primary-btn" onclick="addExpense()">Save Expense</button>
-        </div>
+        <!-- Expense Form -->
+<div id="expenseTab" class="card">
+    <h3>Record Expense</h3>
+
+    <!-- Category -->
+    <label style="font-size:0.85rem; color:#555;">Expense Category</label>
+
+    <!-- Amount -->
+    <label style="font-size:0.85rem; color:#555;">Amount (TZS)</label>
+    <input type="number" id="expenseAmount" placeholder="Enter amount">
+
+    <!-- Comments -->
+    <label style="font-size:0.85rem; color:#555;">Additional Comments</label>
+    <input type="text" id="expenseComment" placeholder="Optional notes">
+
+    <!-- Source -->
+    <select id="expenseSource">
+        <option value="POCKET">From Pocket</option>
+        <option value="SALES">From Sales</option>
+    </select>
+
+    <button class="primary-btn" onclick="addExpense()">Save Expense</button>
+</div>
 
         <!-- Pocket Form -->
         <div id="pocketTab" class="card hidden">
@@ -245,7 +256,7 @@
 
 <script>
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzD0hvOKWwxERXPgidj9LVxhxfg8ykWKiHt1Wnt3JVERaWV4YzFyaz7UWdr-ZfPzna/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF9cqcuA6G_mHh4yVisv2-5eNyx2GwhNaLqEk444yizaCdWPsfdtQ4LEO6a40BelVH/exec';
 
 const USERS = {
     cashier: { password: 'clinic123', role: 'Cashier', name: 'Maria' },
@@ -265,10 +276,12 @@ function login() {
         mainScreen.classList.remove("hidden");
         userDisplay.textContent = user.name + " (" + user.role + ")";
         loadToday();
+        loadCategories();
     } else {
         loginAlert.textContent = "Invalid login";
         loginAlert.classList.add("show","error");
     }
+    
 }
 
 function logout() {
@@ -407,7 +420,33 @@ function showAlert(msg,type){
     mainAlert.className="alert show "+type;
     setTimeout(()=>mainAlert.classList.remove("show"),3000);
 }
+async function loadCategories() {
 
+    try {
+        const res = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: new URLSearchParams({ action: "categories" })
+        });
+
+        const result = await res.json();
+
+        if(result.success){
+            const select = document.getElementById("expenseCategory");
+
+            select.innerHTML = '<option value="">-- Select Category --</option>';
+
+            result.categories.forEach(cat => {
+                const option = document.createElement("option");
+                option.value = cat;
+                option.textContent = cat;
+                select.appendChild(option);
+            });
+        }
+
+    } catch(err){
+        console.log("Error loading categories");
+    }
+}
 </script>
 
 </body>
