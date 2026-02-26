@@ -220,6 +220,9 @@
 
     <!-- Category -->
     <label style="font-size:0.85rem; color:#555;">Expense Category</label>
+    <select id="expenseCategory">
+    <option value="">-- Select Category --</option>
+</select>
 
     <!-- Amount -->
     <label style="font-size:0.85rem; color:#555;">Amount (TZS)</label>
@@ -304,14 +307,47 @@ function showPocket() {
 
 async function addExpense() {
 
-    const desc = expenseDesc.value;
-    const source = expenseSource.value;
-    const amount = expenseAmount.value;
+    const category = document.getElementById("expenseCategory").value;
+    const comment = document.getElementById("expenseComment").value;
+    const source = document.getElementById("expenseSource").value;
+    const amount = document.getElementById("expenseAmount").value;
 
-    if (!desc || !amount) {
-        showAlert("Fill all fields","error");
+    if (!category || !amount) {
+        showAlert("Select category and enter amount","error");
         return;
     }
+
+    const formData = new URLSearchParams();
+    formData.append("action","add");
+    formData.append("type","EXPENSE");
+    formData.append("category",category);
+    formData.append("description",comment || category);
+    formData.append("source",source);
+    formData.append("amount",amount);
+    formData.append("cashier",currentUser.name);
+
+    try {
+        const res = await fetch(SCRIPT_URL,{
+            method:"POST",
+            body:formData
+        });
+
+        const result = await res.json();
+
+        if(result.success){
+            showAlert("Expense Saved","success");
+            document.getElementById("expenseCategory").value="";
+            document.getElementById("expenseComment").value="";
+            document.getElementById("expenseAmount").value="";
+            loadToday();
+        } else {
+            showAlert("Error saving","error");
+        }
+
+    } catch(err){
+        showAlert("Network error","error");
+    }
+}
 
     const formData = new URLSearchParams();
     formData.append("action","add");
