@@ -1,211 +1,305 @@
-<style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clinic Expense Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    body {
-        font-family: "Segoe UI", Roboto, -apple-system, sans-serif;
-        background: #f4f6f9;
-        padding: 24px;
-        color: #2c3e50;
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "Segoe UI", Roboto, sans-serif;
+            background: #f4f6f9;
+            padding: 24px;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: auto;
+        }
+
+        .app-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #1e3a5f;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e6e9ef;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            font-weight: 600;
+            color: #1e3a5f;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 14px;
+            border: 1px solid #dcdfe6;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #fafbfc;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #1e3a5f;
+            background: #ffffff;
+        }
+
+        button {
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .primary-btn {
+            width: 100%;
+            background: #1e3a5f;
+            color: white;
+        }
+
+        .primary-btn:hover {
+            background: #162c47;
+        }
+
+        .secondary-btn {
+            background: #e9edf3;
+            color: #1e3a5f;
+            padding: 8px 16px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .stat-box {
+            background: #f8fafc;
+            padding: 18px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #e6e9ef;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #1e3a5f;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #dcdfe6;
+            background: #f5f7fa;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            background: #1e3a5f;
+            color: white;
+        }
+
+        .transaction {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #eef1f5;
+        }
+
+        .transaction:last-child { border-bottom: none; }
+
+        .transaction-title { font-weight: 600; }
+        .transaction-meta { font-size: 0.8rem; color: #7a869a; }
+
+        .alert {
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .alert.show { display: block; }
+        .alert.success { background: #e6f4ea; color: #1e7e34; }
+        .alert.error { background: #fdecea; color: #b02a37; }
+
+        .hidden { display: none; }
+
+        @media (max-width: 600px) {
+            .row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- LOGIN -->
+    <div id="loginScreen" class="card">
+        <div class="app-title">Clinic Expense Management</div>
+        <div id="loginAlert" class="alert"></div>
+
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button class="primary-btn" onclick="login()">Login</button>
+
+        <div style="margin-top:12px; font-size:0.85rem; color:#777;">
+            Demo: cashier / clinic123<br>
+            Demo: admin / admin123
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="mainScreen" class="hidden">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div class="app-title">Expense Dashboard</div>
+            <div>
+                <span id="userDisplay"></span>
+                <button class="secondary-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div id="mainAlert" class="alert"></div>
+
+        <!-- Stats -->
+        <div class="card">
+            <div class="row">
+                <div class="stat-box">
+                    <div class="stat-label">Pocket Balance</div>
+                    <div class="stat-value" id="pocketBalance">TZS 0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Sales Used</div>
+                    <div class="stat-value" id="salesUsed">TZS 0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" onclick="showExpense()">Add Expense</button>
+            <button class="tab" onclick="showPocket()">Pocket Money</button>
+        </div>
+
+        <!-- Expense Form -->
+        <div id="expenseTab" class="card">
+            <h3>Record Expense</h3>
+            <input type="text" id="expenseDesc" placeholder="Description">
+            <div class="row">
+                <select id="expenseSource">
+                    <option value="POCKET">From Pocket</option>
+                    <option value="SALES">From Sales</option>
+                </select>
+                <input type="number" id="expenseAmount" placeholder="Amount">
+            </div>
+            <button class="primary-btn" onclick="addExpense()">Save Expense</button>
+        </div>
+
+        <!-- Pocket Form -->
+        <div id="pocketTab" class="card hidden">
+            <h3>Add Pocket Money</h3>
+            <input type="number" id="pocketAmount" placeholder="Amount">
+            <button class="primary-btn" onclick="addPocketMoney()">Add Money</button>
+        </div>
+
+        <!-- Transactions -->
+        <div class="card">
+            <h3>Today's Transactions</h3>
+            <div id="transactions">No transactions yet</div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'YOUR_SCRIPT_URL_HERE';
+
+const USERS = {
+    cashier: { password: 'clinic123', role: 'Cashier' },
+    admin: { password: 'admin123', role: 'Admin' }
+};
+
+let currentUser = null;
+
+function login() {
+    const u = username.value;
+    const p = password.value;
+    const user = USERS[u];
+
+    if (user && user.password === p) {
+        currentUser = u;
+        loginScreen.classList.add("hidden");
+        mainScreen.classList.remove("hidden");
+        userDisplay.textContent = u + " (" + user.role + ")";
+        loadToday();
+    } else {
+        loginAlert.textContent = "Invalid login";
+        loginAlert.classList.add("show","error");
     }
+}
 
-    .container {
-        max-width: 720px;
-        margin: 0 auto;
-    }
+function logout() {
+    location.reload();
+}
 
-    /* Header */
-    .app-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-    }
+function showExpense() {
+    expenseTab.classList.remove("hidden");
+    pocketTab.classList.add("hidden");
+    document.querySelectorAll(".tab")[0].classList.add("active");
+    document.querySelectorAll(".tab")[1].classList.remove("active");
+}
 
-    .app-title {
-        font-size: 1.6rem;
-        font-weight: 600;
-        color: #1e3a5f;
-    }
+function showPocket() {
+    expenseTab.classList.add("hidden");
+    pocketTab.classList.remove("hidden");
+    document.querySelectorAll(".tab")[1].classList.add("active");
+    document.querySelectorAll(".tab")[0].classList.remove("active");
+}
 
-    /* Cards */
-    .card {
-        background: #ffffff;
-        border-radius: 14px;
-        padding: 24px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        border: 1px solid #e6e9ef;
-    }
+async function addExpense() {
+    alert("Connected to Apps Script when URL is added.");
+}
 
-    h3 {
-        font-size: 1.1rem;
-        margin-bottom: 16px;
-        font-weight: 600;
-        color: #1e3a5f;
-    }
+async function addPocketMoney() {
+    alert("Connected to Apps Script when URL is added.");
+}
 
-    /* Inputs */
-    input, select {
-        width: 100%;
-        padding: 14px;
-        margin-bottom: 14px;
-        border: 1px solid #dcdfe6;
-        border-radius: 8px;
-        font-size: 15px;
-        background: #fafbfc;
-        transition: 0.2s;
-    }
+async function loadToday() {
+    // Placeholder until connected
+}
+</script>
 
-    input:focus, select:focus {
-        outline: none;
-        border-color: #1e3a5f;
-        background: #ffffff;
-    }
-
-    /* Buttons */
-    button {
-        width: 100%;
-        padding: 14px;
-        border-radius: 8px;
-        border: none;
-        font-weight: 600;
-        font-size: 15px;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-
-    .primary-btn {
-        background: #1e3a5f;
-        color: white;
-    }
-
-    .primary-btn:hover {
-        background: #162c47;
-    }
-
-    .secondary-btn {
-        background: #e9edf3;
-        color: #1e3a5f;
-    }
-
-    .secondary-btn:hover {
-        background: #d8dee8;
-    }
-
-    button:disabled {
-        background: #cfd6df;
-        cursor: not-allowed;
-    }
-
-    /* Grid */
-    .row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-    }
-
-    /* Stats */
-    .stat-box {
-        background: #f8fafc;
-        padding: 18px;
-        border-radius: 12px;
-        text-align: center;
-        border: 1px solid #e6e9ef;
-    }
-
-    .stat-label {
-        font-size: 0.85rem;
-        color: #6c757d;
-        margin-bottom: 6px;
-    }
-
-    .stat-value {
-        font-size: 1.4rem;
-        font-weight: 600;
-        color: #1e3a5f;
-    }
-
-    /* Tabs */
-    .tabs {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-    }
-
-    .tab {
-        flex: 1;
-        padding: 12px;
-        border-radius: 8px;
-        border: 1px solid #dcdfe6;
-        background: #f5f7fa;
-        font-weight: 500;
-        cursor: pointer;
-    }
-
-    .tab.active {
-        background: #1e3a5f;
-        color: white;
-        border-color: #1e3a5f;
-    }
-
-    /* Transactions */
-    .transaction {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 14px 0;
-        border-bottom: 1px solid #eef1f5;
-    }
-
-    .transaction:last-child {
-        border-bottom: none;
-    }
-
-    .transaction-title {
-        font-weight: 600;
-        font-size: 0.95rem;
-    }
-
-    .transaction-meta {
-        font-size: 0.8rem;
-        color: #7a869a;
-        margin-top: 4px;
-    }
-
-    /* Alerts */
-    .alert {
-        padding: 14px;
-        border-radius: 8px;
-        margin-bottom: 16px;
-        display: none;
-        font-size: 0.9rem;
-    }
-
-    .alert.show { display: block; }
-
-    .alert.success {
-        background: #e6f4ea;
-        color: #1e7e34;
-        border: 1px solid #c3e6cb;
-    }
-
-    .alert.error {
-        background: #fdecea;
-        color: #b02a37;
-        border: 1px solid #f5c6cb;
-    }
-
-    .login-box {
-        background: white;
-        padding: 32px;
-        border-radius: 14px;
-        margin-top: 60px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    }
-
-    .hidden { display: none; }
-
-    @media (max-width: 600px) {
-        .row { grid-template-columns: 1fr; }
-    }
-</style>
+</body>
+</html>
