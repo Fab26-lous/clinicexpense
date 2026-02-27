@@ -316,6 +316,38 @@ async function addExpense() {
         showAlert("Select category and enter amount","error");
         return;
     }
+
+    const formData = new URLSearchParams();
+    formData.append("action","add");
+    formData.append("type","EXPENSE");
+    formData.append("category",category);
+    formData.append("description",comment || category);
+    formData.append("source",source);
+    formData.append("amount",amount);
+    formData.append("cashier",currentUser.name);
+
+    try {
+        const res = await fetch(SCRIPT_URL,{
+            method:"POST",
+            body:formData
+        });
+
+        const result = await res.json();
+
+        if(result.success){
+            showAlert("Expense Saved","success");
+            document.getElementById("expenseCategory").value="";
+            document.getElementById("expenseComment").value="";
+            document.getElementById("expenseAmount").value="";
+            loadToday();
+        } else {
+            showAlert("Error saving","error");
+        }
+
+    } catch(err){
+        showAlert("Network error","error");
+    }
+}
 async function addPocketMoney(){
 
     const amount = pocketAmount.value;
