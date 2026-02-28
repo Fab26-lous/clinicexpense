@@ -4,8 +4,6 @@
   <title>Clinic Cash Management</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,14 +15,13 @@
       color: #2c3e50;
     }
 
-    .container { max-width: 1000px; margin: auto; }
+    .container { max-width: 900px; margin: auto; }
 
     .app-title {
       font-size: 1.6rem;
       font-weight: 700;
       color: #1e3a5f;
       margin-bottom: 18px;
-      letter-spacing: .2px;
     }
 
     .card {
@@ -36,6 +33,15 @@
       border: 1px solid #e6e9ef;
     }
 
+    .card-danger {
+      border-left: 4px solid #ef4444;
+      background: #fff5f5;
+    }
+
+    .card-success {
+      border-left: 4px solid #10b981;
+    }
+
     h3 {
       font-size: 1.1rem;
       margin-bottom: 14px;
@@ -43,16 +49,22 @@
       color: #1e3a5f;
     }
 
+    h4 {
+      font-size: 1rem;
+      margin: 15px 0 10px;
+      color: #2c3e50;
+    }
+
     label {
       display: block;
       font-size: 0.85rem;
       color: #555;
-      margin: 8px 0 6px;
+      margin: 8px 0 4px;
     }
 
     input, select, textarea {
       width: 100%;
-      padding: 13px;
+      padding: 12px;
       margin-bottom: 12px;
       border: 1px solid #dcdfe6;
       border-radius: 10px;
@@ -67,18 +79,18 @@
     }
 
     textarea {
-      min-height: 80px;
+      min-height: 60px;
       resize: vertical;
     }
 
     button {
-      padding: 13px 14px;
+      padding: 12px 16px;
       border-radius: 10px;
       border: none;
       font-weight: 700;
       font-size: 15px;
       cursor: pointer;
-      transition: transform .04s ease, opacity .12s ease;
+      transition: all 0.2s;
     }
 
     button:active { transform: translateY(1px); }
@@ -94,24 +106,11 @@
     .secondary-btn {
       background: #e9edf3;
       color: #1e3a5f;
-      padding: 10px 14px;
-      font-weight: 700;
     }
 
     .danger-btn {
       background: #fdecea;
       color: #b02a37;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-weight: 800;
-    }
-
-    .success-btn {
-      background: #e6f4ea;
-      color: #1e7e34;
-      padding: 8px 12px;
-      border-radius: 8px;
-      font-weight: 800;
     }
 
     .row {
@@ -126,22 +125,12 @@
       gap: 14px;
     }
 
-    .row-4 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr;
-      gap: 14px;
-    }
-
     .stat-box {
       background: #f8fafc;
       padding: 16px;
       border-radius: 12px;
       text-align: center;
       border: 1px solid #e6e9ef;
-    }
-
-    .stat-box-large {
-      grid-column: span 2;
     }
 
     .stat-label {
@@ -151,7 +140,7 @@
     }
 
     .stat-value {
-      font-size: 1.45rem;
+      font-size: 1.4rem;
       font-weight: 800;
       color: #1e3a5f;
     }
@@ -181,162 +170,102 @@
       border-color: #1e3a5f;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-      font-size: 0.9rem;
-    }
-
-    th, td {
-      padding: 10px 8px;
-      border-bottom: 1px solid #eef1f5;
-      text-align: left;
-      vertical-align: middle;
-    }
-
-    th {
-      font-size: 0.8rem;
-      color: #6c757d;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .4px;
-    }
-
-    .transaction {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid #eef1f5;
-    }
-
-    .transaction:last-child { border-bottom: none; }
-
-    .transaction-title { font-weight: 800; }
-    .transaction-meta { font-size: 0.82rem; color: #7a869a; margin-top: 3px; }
-
     .alert {
       padding: 12px 14px;
       border-radius: 10px;
       margin: 0 0 12px;
       display: none;
       font-weight: 700;
-      line-height: 1.35;
     }
 
     .alert.show { display: block; }
-    .alert.success { background: #e6f4ea; color: #1e7e34; border: 1px solid #cdebd6; }
-    .alert.error { background: #fdecea; color: #b02a37; border: 1px solid #f6c9c3; }
-    .alert.warning { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-    .alert.info { background: #e7f1ff; color: #1e3a5f; border: 1px solid #cfe2ff; }
+    .alert.success { background: #e6f4ea; color: #1e7e34; }
+    .alert.error { background: #fdecea; color: #b02a37; }
+    .alert.warning { background: #fef3c7; color: #b45309; }
 
     .hidden { display: none; }
 
     .topbar {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 16px;
     }
 
     .user-pill {
       background: #f5f7fa;
       border: 1px solid #dcdfe6;
-      padding: 8px 10px;
+      padding: 8px 12px;
       border-radius: 999px;
       font-weight: 800;
       color: #1e3a5f;
-      font-size: 0.9rem;
-      display: inline-flex;
-      align-items: center;
+    }
+
+    .reason-chips {
+      display: flex;
+      flex-wrap: wrap;
       gap: 8px;
-      white-space: nowrap;
+      margin: 10px 0;
     }
 
-    .subtle {
-      font-size: 0.85rem;
-      color: #6c757d;
-      margin-top: 6px;
-      line-height: 1.35;
+    .reason-chip {
+      background: #f5f7fa;
+      border: 1px solid #dcdfe6;
+      padding: 8px 16px;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
     }
 
-    .hr {
+    .reason-chip:hover {
+      background: #e9edf3;
+      border-color: #1e3a5f;
+    }
+
+    .reason-chip.selected {
+      background: #1e3a5f;
+      color: white;
+      border-color: #1e3a5f;
+    }
+
+    .reason-chip.warning.selected {
+      background: #b45309;
+    }
+
+    .reason-chip.danger.selected {
+      background: #b91c1c;
+    }
+
+    .loss-warning {
+      background: #fee2e2;
+      border: 2px solid #ef4444;
+      color: #b91c1c;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .info-box {
+      background: #e7f1ff;
+      border: 1px solid #cfe2ff;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+    }
+
+    .divider {
       height: 1px;
       background: #eef1f5;
-      border: none;
-      margin: 18px 0;
+      margin: 20px 0;
     }
 
-    /* Mini spinner */
-    .mini-spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(30,58,95,0.2);
-      border-radius: 50%;
-      border-top-color: #1e3a5f;
-      animation: spin 0.6s linear infinite;
-      margin-left: 8px;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Cash report specific styles */
-    .cash-flow-positive {
-      color: #10b981;
-      font-weight: 700;
-    }
-
-    .cash-flow-negative {
-      color: #ef4444;
-      font-weight: 700;
-    }
-
-    .bank-section {
-      background: #f0f7ff;
-      border-radius: 12px;
-      padding: 15px;
-      margin: 15px 0;
-      border: 1px solid #cfe2ff;
-    }
-
-    .report-table {
-      max-height: 400px;
-      overflow-y: auto;
-      border: 1px solid #eef1f5;
-      border-radius: 8px;
-    }
-
-    .report-table table {
-      margin-top: 0;
-    }
-
-    .report-table thead {
-      position: sticky;
-      top: 0;
-      background: #f8fafc;
-      z-index: 10;
-    }
-
-    .total-row {
-      background: #f0f3f8;
-      font-weight: 800;
-    }
-
-    .total-row td {
-      border-top: 2px solid #1e3a5f;
-    }
-
-    @media (max-width: 768px) {
+    @media (max-width: 640px) {
       body { padding: 14px; }
-      .row, .row-3, .row-4 { grid-template-columns: 1fr; }
-      .topbar { flex-direction: column; align-items: flex-start; }
+      .row, .row-3 { grid-template-columns: 1fr; }
       .tabs { flex-direction: column; }
-      .tab { width: 100%; }
     }
   </style>
 </head>
@@ -345,14 +274,14 @@
   <div class="container">
     <!-- LOGIN -->
     <div id="loginScreen" class="card">
-      <div class="app-title">Clinic Cash Management System</div>
+      <div class="app-title">Clinic Cash Management</div>
       <div id="loginAlert" class="alert"></div>
 
       <label>Username</label>
-      <input type="text" id="username" placeholder="Username" autocomplete="username">
+      <input type="text" id="username" placeholder="Username">
 
       <label>Password</label>
-      <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+      <input type="password" id="password" placeholder="Password">
 
       <button class="primary-btn" onclick="login()">Login</button>
     </div>
@@ -361,8 +290,8 @@
     <div id="mainScreen" class="hidden">
 
       <div class="topbar">
-        <div class="app-title" style="margin:0;">Cash Management</div>
-        <div style="display:flex; gap:10px; align-items:center;">
+        <div class="app-title">Cash Management</div>
+        <div style="display: flex; gap: 10px; align-items: center;">
           <div class="user-pill">
             <span id="userDisplay">—</span>
           </div>
@@ -372,164 +301,16 @@
 
       <div id="mainAlert" class="alert"></div>
 
-      <!-- Tabs - Now with 3 sections -->
+      <!-- Tabs -->
       <div class="tabs">
-        <button id="tabCashReport" class="tab active" onclick="showCashReport()">💰 Cash Report</button>
-        <button id="tabExpense" class="tab" onclick="showExpense()">💳 Add Expense</button>
-        <button id="tabPocket" class="tab" onclick="showPocket()">🏦 Pocket Money</button>
+        <button id="tabExpense" class="tab active" onclick="showExpense()">1. Expenses</button>
+        <button id="tabPocket" class="tab" onclick="showPocket()">2. Pocket Money</button>
+        <button id="tabCashReport" class="tab" onclick="showCashReport()">3. Cash Report</button>
       </div>
 
-      <!-- ========== CASH REPORT SECTION (New) ========== -->
-      <div id="cashReportTab" class="card">
-        <h3>📊 Daily Cash Report</h3>
-        
-        <!-- Date Selection -->
-        <div class="row">
-          <div>
-            <label>Select Date</label>
-            <input type="date" id="reportDate" onchange="loadCashReport()">
-          </div>
-          <div>
-            <label>&nbsp;</label>
-            <button class="secondary-btn" onclick="loadCashReport()" style="margin-top: 0;">Load Report</button>
-          </div>
-        </div>
-
-        <!-- Main Cash Report Form -->
-        <div class="bank-section">
-          <h4 style="margin-bottom: 15px; color: #1e3a5f;">🏦 Bank & Cash Summary</h4>
-          
-          <div class="row-4">
-            <div>
-              <label>Opening Bank</label>
-              <input type="number" id="openingBank" placeholder="0" value="0" min="0" step="1000">
-            </div>
-            <div>
-              <label>Opening Pocket</label>
-              <input type="number" id="openingPocket" placeholder="0" value="0" min="0" step="1000">
-            </div>
-            <div>
-              <label>Total Sales</label>
-              <input type="number" id="totalSales" placeholder="Enter sales" min="0" step="1000" oninput="calculateCashReport()">
-            </div>
-            <div>
-              <label>Bank Deposits</label>
-              <input type="number" id="bankDeposits" placeholder="Amount to bank" min="0" step="1000" oninput="calculateCashReport()">
-            </div>
-          </div>
-
-          <div class="row-4">
-            <div>
-              <label>Pocket Expenses</label>
-              <input type="number" id="pocketExpenses" placeholder="Expenses from pocket" min="0" step="1000" oninput="calculateCashReport()">
-            </div>
-            <div>
-              <label>Sales Used Direct</label>
-              <input type="number" id="salesDirect" placeholder="Sales used directly" min="0" step="1000" oninput="calculateCashReport()">
-            </div>
-            <div>
-              <label>Bank Expenses</label>
-              <input type="number" id="bankExpenses" placeholder="Expenses from bank" min="0" step="1000" oninput="calculateCashReport()">
-            </div>
-            <div>
-              <label>Pocket Top-up</label>
-              <input type="number" id="pocketTopup" placeholder="Top-up amount" min="0" step="1000" oninput="calculateCashReport()">
-            </div>
-          </div>
-        </div>
-
-        <!-- Calculated Results -->
-        <div class="row-3">
-          <div class="stat-box">
-            <div class="stat-label">Expected Bank Balance</div>
-            <div class="stat-value" id="expectedBank">TZS 0</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Expected Pocket Balance</div>
-            <div class="stat-value" id="expectedPocket">TZS 0</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Total Cash in Hand</div>
-            <div class="stat-value" id="totalCash">TZS 0</div>
-          </div>
-        </div>
-
-        <!-- Actual Counts -->
-        <hr class="hr">
-        <h4>🔍 Actual Cash Counts</h4>
-        
-        <div class="row">
-          <div>
-            <label>Actual Bank Balance</label>
-            <input type="number" id="actualBank" placeholder="Count bank cash" min="0" step="1000" oninput="calculateVariances()">
-          </div>
-          <div>
-            <label>Actual Pocket Cash</label>
-            <input type="number" id="actualPocket" placeholder="Count pocket cash" min="0" step="1000" oninput="calculateVariances()">
-          </div>
-        </div>
-
-        <!-- Variance Results -->
-        <div class="row-3" style="margin-top: 20px;">
-          <div class="stat-box" id="bankVarianceBox">
-            <div class="stat-label">Bank Variance</div>
-            <div class="stat-value" id="bankVariance">TZS 0</div>
-          </div>
-          <div class="stat-box" id="pocketVarianceBox">
-            <div class="stat-label">Pocket Variance</div>
-            <div class="stat-value" id="pocketVariance">TZS 0</div>
-          </div>
-          <div class="stat-box" id="totalVarianceBox">
-            <div class="stat-label">Total Variance</div>
-            <div class="stat-value" id="totalVariance">TZS 0</div>
-          </div>
-        </div>
-
-        <!-- Loss/Extra Explanation -->
-        <div id="varianceExplanation" class="hidden" style="margin-top: 20px; padding: 20px; background: #fff5f5; border-radius: 12px; border: 1px solid #fecaca;">
-          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-            <span id="varianceIcon2" style="font-size: 32px;">⚠️</span>
-            <div>
-              <div style="font-size: 1.2rem; font-weight: 800; color: #b91c1c;" id="varianceMessage"></div>
-            </div>
-          </div>
-          
-          <label style="color: #b91c1c; font-weight: 700;">Explanation Required:</label>
-          <textarea id="varianceReason" placeholder="Explain why there's a difference..." rows="3"></textarea>
-        </div>
-
-        <!-- Submit Button -->
-        <button class="primary-btn" onclick="submitCashReport()" id="submitCashReportBtn" style="margin-top: 20px;">Save Cash Report</button>
-
-        <!-- Report Table (like your Google Sheet) -->
-        <hr class="hr">
-        <h4>📋 Daily Summary</h4>
-        
-        <div class="report-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Bank Balance</th>
-                <th>Pocket Balance</th>
-                <th>Total Cash</th>
-                <th>Sales</th>
-                <th>Expenses</th>
-                <th>Variance</th>
-              </tr>
-            </thead>
-            <tbody id="reportTableBody">
-              <tr>
-                <td colspan="7" style="text-align: center; padding: 30px;">No data available</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- ========== EXPENSE SECTION (Existing) ========== -->
-      <div id="expenseTab" class="card hidden">
-        <h3>💳 Record Expense</h3>
+      <!-- ========== SECTION 1: EXPENSES (Keep as is) ========== -->
+      <div id="expenseTab" class="card">
+        <h3>💰 Record Daily Expenses</h3>
 
         <label>Expense Category</label>
         <select id="expenseCategory">
@@ -546,7 +327,6 @@
             <select id="expenseSource">
               <option value="POCKET">From Pocket</option>
               <option value="SALES">From Sales</option>
-              <option value="BANK">From Bank</option>
             </select>
           </div>
         </div>
@@ -554,119 +334,207 @@
         <label>Description</label>
         <input type="text" id="expenseComment" placeholder="e.g., Ambulance, Eye, Physiotherapy">
 
-        <button class="secondary-btn" onclick="addExpense()">Add Expense</button>
+        <button class="secondary-btn" onclick="addExpense()" style="width: 100%;">Add Expense</button>
 
-        <hr class="hr">
+        <div class="divider"></div>
 
         <h4>Today's Expenses</h4>
-        <div class="report-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Amount</th>
-                <th>Source</th>
-                <th>Description</th>
-              </tr>
-            </thead>
-            <tbody id="expenseList"></tbody>
-          </table>
-        </div>
-        <div class="subtle" id="expenseHint">No expenses yet.</div>
+        <div id="expenseList"></div>
+        <div class="subtle" id="expenseHint">No expenses yet</div>
       </div>
 
-      <!-- ========== POCKET MONEY SECTION (Existing) ========== -->
+      <!-- ========== SECTION 2: POCKET MONEY (Simplified) ========== -->
       <div id="pocketTab" class="card hidden">
-        <h3>🏦 Pocket Money Management</h3>
+        <h3>👝 Pocket Money Management</h3>
+        
+        <div class="info-box">
+          <strong>Current Pocket Balance:</strong> 
+          <span style="font-size: 1.3rem; font-weight: 800; color: #1e3a5f; margin-left: 10px;" id="pocketBalanceDisplay">TZS 0</span>
+        </div>
 
-        <label>Type</label>
-        <select id="pocketType">
-          <option value="OPENING">Opening Balance (Start of day)</option>
-          <option value="TOPUP" selected>Top-up from Bank</option>
-          <option value="WITHDRAW">Withdraw to Bank</option>
-        </select>
+        <div class="row">
+          <div>
+            <label>Date</label>
+            <input type="date" id="pocketDate">
+          </div>
+          <div>
+            <label>Type</label>
+            <select id="pocketType">
+              <option value="TOPUP">💰 Top-up from Sales</option>
+              <option value="DIRECTOR">👤 Director Top-up</option>
+              <option value="WITHDRAW">💸 Withdraw to Director</option>
+            </select>
+          </div>
+        </div>
 
         <label>Amount (TZS)</label>
-        <input type="number" id="pocketAmount" placeholder="Amount" min="1" step="1000">
+        <input type="number" id="pocketAmount" placeholder="Enter amount" min="1" step="1000">
 
-        <label>Notes</label>
-        <input type="text" id="pocketNotes" placeholder="Optional notes">
+        <label>Notes (Optional)</label>
+        <input type="text" id="pocketNotes" placeholder="e.g., From sales, Director gave cash">
 
-        <button class="primary-btn" onclick="addPocketTransaction()">Save Transaction</button>
+        <button class="primary-btn" onclick="addPocketTransaction()">Record Pocket Transaction</button>
 
-        <hr class="hr">
+        <div class="divider"></div>
 
         <h4>Pocket History</h4>
-        <div class="report-table">
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Type</th>
-                <th>Amount</th>
-                <th>Balance</th>
-              </tr>
-            </thead>
-            <tbody id="pocketHistory">
-              <tr>
-                <td colspan="4" style="text-align: center; padding: 30px;">No transactions</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <div id="pocketHistory"></div>
       </div>
 
+      <!-- ========== SECTION 3: CASH REPORT (New Simplified) ========== -->
+      <div id="cashReportTab" class="card hidden">
+        <h3>📊 Daily Cash Report</h3>
+
+        <!-- Date -->
+        <div class="row">
+          <div>
+            <label>Report Date</label>
+            <input type="date" id="reportDate">
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <button class="secondary-btn" onclick="loadCashReport()" style="width: 100%;">Load Report</button>
+          </div>
+        </div>
+
+        <!-- PART 1: Cash Difference (System vs Actual) -->
+        <div class="card" style="padding: 15px; margin-bottom: 15px;">
+          <h4 style="margin-top: 0;">💰 Cash Difference</h4>
+          
+          <div class="row">
+            <div>
+              <label>System Sales Amount</label>
+              <input type="number" id="systemSales" placeholder="From clinic system" min="0" step="1000" oninput="calculateCashDifference()">
+            </div>
+            <div>
+              <label>Actual Cash Counted</label>
+              <input type="number" id="actualCash" placeholder="Physical cash count" min="0" step="1000" oninput="calculateCashDifference()">
+            </div>
+          </div>
+
+          <div class="stat-box" style="margin: 10px 0;" id="differenceBox">
+            <div class="stat-label">Difference</div>
+            <div class="stat-value" id="differenceAmount">TZS 0</div>
+          </div>
+
+          <!-- Cash Difference Reasons -->
+          <div id="cashDifferenceSection" class="hidden">
+            <label>Reason for Difference:</label>
+            <div class="reason-chips">
+              <div class="reason-chip" onclick="selectCashReason('Loss bila maelezo')">Loss bila maelezo</div>
+              <div class="reason-chip" onclick="selectCashReason('Billed wrongly')">Billed wrongly</div>
+              <div class="reason-chip" onclick="selectCashReason('Lipa Mpesa')">Lipa Mpesa</div>
+              <div class="reason-chip" onclick="selectCashReason('Other')">Other</div>
+            </div>
+
+            <!-- Lipa Mpesa Amount -->
+            <div id="lipaMpesaSection" class="hidden">
+              <label>Lipa Mpesa Amount (TZS)</label>
+              <input type="number" id="lipaMpesaAmount" placeholder="Enter Mpesa amount" min="0" step="100">
+            </div>
+
+            <!-- Additional Comment -->
+            <label>Additional Comment</label>
+            <textarea id="cashComment" placeholder="Explain the difference..."></textarea>
+          </div>
+        </div>
+
+        <!-- PART 2: Bank Deposit -->
+        <div class="card" style="padding: 15px;">
+          <h4 style="margin-top: 0;">🏦 Bank Deposit</h4>
+
+          <div class="info-box" style="background: #f0f9ff;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Expected Bank Deposit:</span>
+              <span style="font-size: 1.3rem; font-weight: 800; color: #1e3a5f;" id="expectedDeposit">TZS 0</span>
+            </div>
+            <div class="subtle">Actual Cash - Pocket Top-ups + Director Cash</div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label>Actual Amount Deposited</label>
+              <input type="number" id="actualDeposit" placeholder="Amount deposited to bank" min="0" step="1000" oninput="calculateDepositDifference()">
+            </div>
+            <div>
+              <label>Director Cash Given</label>
+              <input type="number" id="directorCash" placeholder="Cash given to director" min="0" step="1000" oninput="calculateDepositDifference()">
+            </div>
+          </div>
+
+          <div class="stat-box" style="margin: 10px 0;" id="depositBox">
+            <div class="stat-label">Deposit Difference</div>
+            <div class="stat-value" id="depositDifference">TZS 0</div>
+          </div>
+
+          <!-- Deposit Difference Reasons -->
+          <div id="depositDifferenceSection" class="hidden">
+            <label class="variance-negative">Reason for Lower Deposit:</label>
+            <div class="reason-chips">
+              <div class="reason-chip danger" onclick="selectDepositReason('Given to Director')">Given to Director</div>
+              <div class="reason-chip danger" onclick="selectDepositReason('Used for Expenses')">Used for Expenses</div>
+              <div class="reason-chip danger" onclick="selectDepositReason('Loss')">Loss</div>
+              <div class="reason-chip danger" onclick="selectDepositReason('Other')">Other</div>
+            </div>
+            
+            <label>Amount to Director (if applicable)</label>
+            <input type="number" id="directorAmount" placeholder="Amount given to director" min="0" step="1000">
+
+            <label>Explanation</label>
+            <textarea id="depositComment" placeholder="Explain why deposit is lower..."></textarea>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button class="primary-btn" onclick="submitCashReport()" id="submitReportBtn" style="margin-top: 20px;">Save Daily Report</button>
+
+        <!-- History -->
+        <div class="divider"></div>
+        <h4>Previous Reports</h4>
+        <div id="reportHistory"></div>
+      </div>
     </div>
   </div>
 
   <script>
-    // ========== CONFIGURATION ==========
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF9cqcuA6G_mHh4yVisv2-5eNyx2GwhNaLqEk444yizaCdWPsfdtQ4LEO6a40BelVH/exec';
-    
-    // Users
+    // ========== CONFIG ==========
     const USERS = {
       cashier: { password: 'clinic123', role: 'Cashier' },
       admin: { password: 'admin123', role: 'Admin' }
     };
 
-    // Global variables
+    // Global state
     let currentUser = null;
-    let pendingExpenses = [];
-    let isSubmitting = false;
-    
-    // Cash report data
+    let expenses = [];
+    let pocketTransactions = [];
     let cashReports = [];
+    let pocketBalance = 0;
+    
+    // Current selections
+    let selectedCashReason = '';
+    let selectedDepositReason = '';
 
-    // ========== INITIALIZATION ==========
+    // ========== INIT ==========
     document.addEventListener('DOMContentLoaded', function() {
-      // Set today's date
       const today = new Date();
       const yyyy = today.getFullYear();
       const mm = String(today.getMonth() + 1).padStart(2, '0');
       const dd = String(today.getDate()).padStart(2, '0');
-      document.getElementById('reportDate').value = `${yyyy}-${mm}-${dd}`;
-
-      // Add enter key handler for login
-      document.getElementById('password').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') login();
-      });
-
-      // Load fallback categories
-      useFallbackCategories();
       
-      // Load sample data for demo
+      document.getElementById('reportDate').value = `${yyyy}-${mm}-${dd}`;
+      document.getElementById('pocketDate').value = `${yyyy}-${mm}-${dd}`;
+
+      // Load categories
+      loadCategories();
+      
+      // Load sample data
       loadSampleData();
     });
 
-    // ========== AUTHENTICATION ==========
-    window.login = async function() {
+    // ========== AUTH ==========
+    window.login = function() {
       const u = document.getElementById('username').value.trim();
       const p = document.getElementById('password').value;
-
-      if (!u || !p) {
-        showInlineAlert('loginAlert', 'Please enter username and password', 'error');
-        return;
-      }
 
       const user = USERS[u];
       if (user && user.password === p) {
@@ -676,14 +544,10 @@
         document.getElementById('mainScreen').classList.remove('hidden');
         document.getElementById('userDisplay').textContent = `${u} (${user.role})`;
 
-        clearAlert('loginAlert');
-        showCashReport();
-        
-        // Load data
-        loadCategories();
-        loadCashReport();
+        showExpense();
+        updatePocketDisplay();
       } else {
-        showInlineAlert('loginAlert', 'Invalid username or password', 'error');
+        showAlert('Invalid username or password', 'error');
       }
     };
 
@@ -692,431 +556,433 @@
     };
 
     // ========== TAB MANAGEMENT ==========
-    window.showCashReport = function() {
-      document.getElementById('cashReportTab').classList.remove('hidden');
-      document.getElementById('expenseTab').classList.add('hidden');
-      document.getElementById('pocketTab').classList.add('hidden');
-      document.getElementById('tabCashReport').classList.add('active');
-      document.getElementById('tabExpense').classList.remove('active');
-      document.getElementById('tabPocket').classList.remove('active');
-      loadCashReport();
-    };
-
     window.showExpense = function() {
-      document.getElementById('cashReportTab').classList.add('hidden');
       document.getElementById('expenseTab').classList.remove('hidden');
       document.getElementById('pocketTab').classList.add('hidden');
-      document.getElementById('tabCashReport').classList.remove('active');
+      document.getElementById('cashReportTab').classList.add('hidden');
+      
       document.getElementById('tabExpense').classList.add('active');
       document.getElementById('tabPocket').classList.remove('active');
+      document.getElementById('tabCashReport').classList.remove('active');
     };
 
     window.showPocket = function() {
-      document.getElementById('cashReportTab').classList.add('hidden');
       document.getElementById('expenseTab').classList.add('hidden');
       document.getElementById('pocketTab').classList.remove('hidden');
-      document.getElementById('tabCashReport').classList.remove('active');
+      document.getElementById('cashReportTab').classList.add('hidden');
+      
       document.getElementById('tabExpense').classList.remove('active');
       document.getElementById('tabPocket').classList.add('active');
+      document.getElementById('tabCashReport').classList.remove('active');
+      
+      updatePocketHistory();
     };
 
-    // ========== CASH REPORT FUNCTIONS ==========
-    window.calculateCashReport = function() {
-      const openingBank = Number(document.getElementById('openingBank').value) || 0;
-      const openingPocket = Number(document.getElementById('openingPocket').value) || 0;
-      const sales = Number(document.getElementById('totalSales').value) || 0;
-      const bankDeposits = Number(document.getElementById('bankDeposits').value) || 0;
-      const pocketExpenses = Number(document.getElementById('pocketExpenses').value) || 0;
-      const salesDirect = Number(document.getElementById('salesDirect').value) || 0;
-      const bankExpenses = Number(document.getElementById('bankExpenses').value) || 0;
-      const pocketTopup = Number(document.getElementById('pocketTopup').value) || 0;
-
-      // Calculate expected balances
-      // Bank: opening + deposits - expenses - topups to pocket
-      const expectedBank = openingBank + bankDeposits - bankExpenses - pocketTopup;
+    window.showCashReport = function() {
+      document.getElementById('expenseTab').classList.add('hidden');
+      document.getElementById('pocketTab').classList.add('hidden');
+      document.getElementById('cashReportTab').classList.remove('hidden');
       
-      // Pocket: opening + sales - expenses - bank deposits + topups
-      // Sales go to pocket first, then can be moved to bank
-      const expectedPocket = openingPocket + sales - pocketExpenses - bankDeposits + pocketTopup - salesDirect;
+      document.getElementById('tabExpense').classList.remove('active');
+      document.getElementById('tabPocket').classList.remove('active');
+      document.getElementById('tabCashReport').classList.add('active');
       
-      const totalCash = expectedBank + expectedPocket;
-
-      document.getElementById('expectedBank').textContent = 'TZS ' + formatNumber(expectedBank);
-      document.getElementById('expectedPocket').textContent = 'TZS ' + formatNumber(expectedPocket);
-      document.getElementById('totalCash').textContent = 'TZS ' + formatNumber(totalCash);
-      
-      // Recalculate variances if actual values exist
-      calculateVariances();
+      loadCashReport();
+      calculateExpectedDeposit();
     };
 
-    window.calculateVariances = function() {
-      const expectedBank = extractNumber(document.getElementById('expectedBank').textContent);
-      const expectedPocket = extractNumber(document.getElementById('expectedPocket').textContent);
-      const actualBank = Number(document.getElementById('actualBank').value) || 0;
-      const actualPocket = Number(document.getElementById('actualPocket').value) || 0;
-
-      const bankVariance = actualBank - expectedBank;
-      const pocketVariance = actualPocket - expectedPocket;
-      const totalVariance = bankVariance + pocketVariance;
-
-      // Display variances with colors
-      displayVariance('bankVariance', bankVariance);
-      displayVariance('pocketVariance', pocketVariance);
-      displayVariance('totalVariance', totalVariance);
-
-      // Show/hide explanation for variances
-      const varianceBox = document.getElementById('varianceExplanation');
-      const varianceMessage = document.getElementById('varianceMessage');
-      const varianceIcon = document.getElementById('varianceIcon2');
-      
-      if (bankVariance !== 0 || pocketVariance !== 0) {
-        varianceBox.classList.remove('hidden');
-        
-        if (totalVariance > 0) {
-          varianceMessage.textContent = `💰 Extra Cash: TZS ${formatNumber(Math.abs(totalVariance))}`;
-          varianceIcon.textContent = '💰';
-          varianceBox.style.background = '#f0f9ff';
-          varianceBox.style.borderColor = '#bae6fd';
-        } else if (totalVariance < 0) {
-          varianceMessage.textContent = `⚠️ LOSS DETECTED: TZS ${formatNumber(Math.abs(totalVariance))}`;
-          varianceIcon.textContent = '⚠️';
-          varianceBox.style.background = '#fff5f5';
-          varianceBox.style.borderColor = '#fecaca';
-        }
-      } else {
-        varianceBox.classList.add('hidden');
-      }
-    };
-
-    function displayVariance(elementId, variance) {
-      const el = document.getElementById(elementId);
-      const box = document.getElementById(elementId + 'Box');
-      
-      el.textContent = 'TZS ' + formatNumber(variance);
-      
-      if (variance > 0) {
-        el.style.color = '#10b981';
-        box.classList.add('card-success');
-        box.classList.remove('card-danger');
-      } else if (variance < 0) {
-        el.style.color = '#ef4444';
-        box.classList.add('card-danger');
-        box.classList.remove('card-success');
-      } else {
-        el.style.color = '#1e3a5f';
-        box.classList.remove('card-success', 'card-danger');
-      }
-    }
-
-    window.submitCashReport = function() {
-      const date = document.getElementById('reportDate').value;
-      const openingBank = Number(document.getElementById('openingBank').value) || 0;
-      const openingPocket = Number(document.getElementById('openingPocket').value) || 0;
-      const sales = Number(document.getElementById('totalSales').value) || 0;
-      const bankDeposits = Number(document.getElementById('bankDeposits').value) || 0;
-      const pocketExpenses = Number(document.getElementById('pocketExpenses').value) || 0;
-      const salesDirect = Number(document.getElementById('salesDirect').value) || 0;
-      const bankExpenses = Number(document.getElementById('bankExpenses').value) || 0;
-      const pocketTopup = Number(document.getElementById('pocketTopup').value) || 0;
-      const actualBank = Number(document.getElementById('actualBank').value) || 0;
-      const actualPocket = Number(document.getElementById('actualPocket').value) || 0;
-      const varianceReason = document.getElementById('varianceReason').value;
-
-      // Calculate expected
-      const expectedBank = openingBank + bankDeposits - bankExpenses - pocketTopup;
-      const expectedPocket = openingPocket + sales - pocketExpenses - bankDeposits + pocketTopup - salesDirect;
-      const bankVariance = actualBank - expectedBank;
-      const pocketVariance = actualPocket - expectedPocket;
-
-      // Validate if there's variance without reason
-      if ((bankVariance !== 0 || pocketVariance !== 0) && !varianceReason.trim()) {
-        showAlert('Please provide an explanation for the variance', 'error');
-        return;
-      }
-
-      // Add to reports table
-      const report = {
-        date,
-        openingBank,
-        openingPocket,
-        sales,
-        bankDeposits,
-        pocketExpenses,
-        salesDirect,
-        bankExpenses,
-        pocketTopup,
-        expectedBank,
-        expectedPocket,
-        actualBank,
-        actualPocket,
-        bankVariance,
-        pocketVariance,
-        totalVariance: bankVariance + pocketVariance,
-        reason: varianceReason
-      };
-
-      cashReports.unshift(report);
-      updateReportTable();
-      
-      showAlert('Cash report saved successfully', 'success');
-      
-      // Clear actual fields but keep opening/expected
-      document.getElementById('actualBank').value = '';
-      document.getElementById('actualPocket').value = '';
-      document.getElementById('varianceReason').value = '';
-      document.getElementById('varianceExplanation').classList.add('hidden');
-    };
-
-    window.loadCashReport = function() {
-      const date = document.getElementById('reportDate').value;
-      
-      // In real implementation, fetch from server
-      // For demo, check if we have data for this date
-      const existing = cashReports.find(r => r.date === date);
-      
-      if (existing) {
-        // Load existing data
-        document.getElementById('openingBank').value = existing.openingBank;
-        document.getElementById('openingPocket').value = existing.openingPocket;
-        document.getElementById('totalSales').value = existing.sales;
-        document.getElementById('bankDeposits').value = existing.bankDeposits;
-        document.getElementById('pocketExpenses').value = existing.pocketExpenses;
-        document.getElementById('salesDirect').value = existing.salesDirect;
-        document.getElementById('bankExpenses').value = existing.bankExpenses;
-        document.getElementById('pocketTopup').value = existing.pocketTopup;
-        document.getElementById('actualBank').value = existing.actualBank;
-        document.getElementById('actualPocket').value = existing.actualPocket;
-        
-        calculateCashReport();
-        calculateVariances();
-        
-        if (existing.reason) {
-          document.getElementById('varianceReason').value = existing.reason;
-          document.getElementById('varianceExplanation').classList.remove('hidden');
-        }
-      } else {
-        // Clear form for new entry
-        clearCashReportForm();
-      }
-    };
-
-    function clearCashReportForm() {
-      document.getElementById('openingBank').value = '0';
-      document.getElementById('openingPocket').value = '0';
-      document.getElementById('totalSales').value = '';
-      document.getElementById('bankDeposits').value = '';
-      document.getElementById('pocketExpenses').value = '';
-      document.getElementById('salesDirect').value = '';
-      document.getElementById('bankExpenses').value = '';
-      document.getElementById('pocketTopup').value = '';
-      document.getElementById('actualBank').value = '';
-      document.getElementById('actualPocket').value = '';
-      document.getElementById('varianceReason').value = '';
-      document.getElementById('varianceExplanation').classList.add('hidden');
-      
-      calculateCashReport();
-    }
-
-    function updateReportTable() {
-      const tbody = document.getElementById('reportTableBody');
-      
-      if (cashReports.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 30px;">No data available</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = cashReports.map(report => {
-        const totalCash = report.expectedBank + report.expectedPocket;
-        const totalExpenses = report.pocketExpenses + report.bankExpenses + report.salesDirect;
-        const varianceClass = report.totalVariance > 0 ? 'cash-flow-positive' : (report.totalVariance < 0 ? 'cash-flow-negative' : '');
-        
-        return `
-          <tr>
-            <td>${report.date}</td>
-            <td>TZS ${formatNumber(report.expectedBank)}</td>
-            <td>TZS ${formatNumber(report.expectedPocket)}</td>
-            <td>TZS ${formatNumber(totalCash)}</td>
-            <td>TZS ${formatNumber(report.sales)}</td>
-            <td>TZS ${formatNumber(totalExpenses)}</td>
-            <td class="${varianceClass}">TZS ${formatNumber(report.totalVariance)}</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    // ========== EXPENSE FUNCTIONS ==========
+    // ========== EXPENSES (Keep as is) ==========
     window.addExpense = function() {
       const category = document.getElementById('expenseCategory').value;
       const amount = Number(document.getElementById('expenseAmount').value);
       const source = document.getElementById('expenseSource').value;
-      const comment = document.getElementById('expenseComment').value.trim();
+      const desc = document.getElementById('expenseComment').value.trim();
 
-      if (!category || !amount || amount <= 0) {
-        showAlert("Select category and enter a valid amount", "error");
+      if (!category || !amount) {
+        showAlert('Please fill all fields', 'error');
         return;
       }
 
-      const expense = {
+      expenses.push({
         category,
         amount,
         source,
-        description: comment || category,
+        desc: desc || category,
         date: new Date().toLocaleDateString()
-      };
+      });
 
-      pendingExpenses.push(expense);
-      renderExpenseList();
-
+      renderExpenses();
+      
       // Clear form
-      document.getElementById('expenseCategory').value = "";
-      document.getElementById('expenseAmount').value = "";
-      document.getElementById('expenseComment').value = "";
+      document.getElementById('expenseCategory').value = '';
+      document.getElementById('expenseAmount').value = '';
+      document.getElementById('expenseComment').value = '';
+      
+      showAlert('Expense added', 'success');
     };
 
-    function renderExpenseList() {
-      const tbody = document.getElementById('expenseList');
-      const hint = document.getElementById('expenseHint');
-
-      if (pendingExpenses.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">No expenses yet</td></tr>';
-        hint.textContent = "";
+    function renderExpenses() {
+      const el = document.getElementById('expenseList');
+      
+      if (expenses.length === 0) {
+        el.innerHTML = '<div class="subtle">No expenses yet</div>';
         return;
       }
 
-      hint.textContent = "";
-
-      tbody.innerHTML = pendingExpenses.map(e => `
-        <tr>
-          <td>${escapeHtml(e.category)}</td>
-          <td>TZS ${formatNumber(e.amount)}</td>
-          <td>${escapeHtml(e.source)}</td>
-          <td>${escapeHtml(e.description)}</td>
-        </tr>
+      el.innerHTML = expenses.map(e => `
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+          <div>
+            <strong>${e.category}</strong>
+            <div style="font-size: 0.8rem; color: #666;">${e.source} - ${e.desc}</div>
+          </div>
+          <div style="font-weight: 700;">TZS ${formatNumber(e.amount)}</div>
+        </div>
       `).join('');
     }
 
-    // ========== POCKET FUNCTIONS ==========
+    // ========== POCKET MONEY ==========
     window.addPocketTransaction = function() {
+      const date = document.getElementById('pocketDate').value;
       const type = document.getElementById('pocketType').value;
       const amount = Number(document.getElementById('pocketAmount').value);
       const notes = document.getElementById('pocketNotes').value;
 
       if (!amount || amount <= 0) {
-        showAlert("Enter a valid amount", "error");
+        showAlert('Enter valid amount', 'error');
         return;
       }
 
-      showAlert(`${type} of TZS ${formatNumber(amount)} recorded`, 'success');
+      // Update pocket balance
+      if (type === 'TOPUP' || type === 'DIRECTOR') {
+        pocketBalance += amount;
+      } else if (type === 'WITHDRAW') {
+        if (amount > pocketBalance) {
+          showAlert('Insufficient pocket balance', 'error');
+          return;
+        }
+        pocketBalance -= amount;
+      }
+
+      pocketTransactions.push({
+        date,
+        type,
+        amount,
+        notes,
+        balance: pocketBalance
+      });
+
+      updatePocketDisplay();
+      updatePocketHistory();
       
       // Clear form
       document.getElementById('pocketAmount').value = '';
       document.getElementById('pocketNotes').value = '';
+      
+      showAlert('Pocket transaction recorded', 'success');
     };
 
-    // ========== CATEGORY MANAGEMENT ==========
-    function useFallbackCategories() {
-      const select = document.getElementById("expenseCategory");
-      select.innerHTML = '<option value="">-- Select Category --</option>';
+    function updatePocketDisplay() {
+      document.getElementById('pocketBalanceDisplay').textContent = 'TZS ' + formatNumber(pocketBalance);
+    }
+
+    function updatePocketHistory() {
+      const el = document.getElementById('pocketHistory');
+      
+      if (pocketTransactions.length === 0) {
+        el.innerHTML = '<div class="subtle">No transactions yet</div>';
+        return;
+      }
+
+      el.innerHTML = pocketTransactions.map(t => `
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee;">
+          <div>
+            <strong>${t.type}</strong>
+            <div style="font-size: 0.8rem; color: #666;">${t.date} - ${t.notes || ''}</div>
+          </div>
+          <div style="font-weight: 700; color: ${t.type === 'WITHDRAW' ? '#ef4444' : '#10b981'}">
+            ${t.type === 'WITHDRAW' ? '-' : '+'} TZS ${formatNumber(t.amount)}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ========== CASH REPORT ==========
+    window.calculateCashDifference = function() {
+      const systemSales = Number(document.getElementById('systemSales').value) || 0;
+      const actualCash = Number(document.getElementById('actualCash').value) || 0;
+      
+      const difference = actualCash - systemSales;
+      
+      const diffEl = document.getElementById('differenceAmount');
+      const diffBox = document.getElementById('differenceBox');
+      const reasonSection = document.getElementById('cashDifferenceSection');
+      
+      diffEl.textContent = 'TZS ' + formatNumber(difference);
+      
+      if (difference === 0) {
+        diffEl.style.color = '#1e3a5f';
+        diffBox.classList.remove('card-danger', 'card-success');
+        reasonSection.classList.add('hidden');
+      } else if (difference > 0) {
+        diffEl.style.color = '#10b981';
+        diffBox.classList.add('card-success');
+        diffBox.classList.remove('card-danger');
+        reasonSection.classList.remove('hidden');
+      } else {
+        diffEl.style.color = '#ef4444';
+        diffBox.classList.add('card-danger');
+        diffBox.classList.remove('card-success');
+        reasonSection.classList.remove('hidden');
+      }
+      
+      calculateExpectedDeposit();
+    };
+
+    window.selectCashReason = function(reason) {
+      selectedCashReason = reason;
+      
+      document.querySelectorAll('#cashDifferenceSection .reason-chip').forEach(chip => {
+        chip.classList.remove('selected');
+      });
+      event.target.classList.add('selected');
+      
+      // Show/hide Lipa Mpesa section
+      const mpesaSection = document.getElementById('lipaMpesaSection');
+      if (reason === 'Lipa Mpesa') {
+        mpesaSection.classList.remove('hidden');
+      } else {
+        mpesaSection.classList.add('hidden');
+      }
+    };
+
+    window.calculateExpectedDeposit = function() {
+      const actualCash = Number(document.getElementById('actualCash').value) || 0;
+      
+      // Calculate pocket top-ups from sales (not director top-ups)
+      const today = document.getElementById('reportDate').value;
+      const pocketTopups = pocketTransactions
+        .filter(t => t.date === today && t.type === 'TOPUP')
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      // Expected deposit = Actual Cash - Pocket Top-ups
+      const expectedDeposit = actualCash - pocketTopups;
+      
+      document.getElementById('expectedDeposit').textContent = 'TZS ' + formatNumber(Math.max(0, expectedDeposit));
+      
+      calculateDepositDifference();
+    };
+
+    window.calculateDepositDifference = function() {
+      const actualCash = Number(document.getElementById('actualCash').value) || 0;
+      const pocketTopups = pocketTransactions
+        .filter(t => t.date === document.getElementById('reportDate').value && t.type === 'TOPUP')
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      const expectedDeposit = Math.max(0, actualCash - pocketTopups);
+      const actualDeposit = Number(document.getElementById('actualDeposit').value) || 0;
+      const directorCash = Number(document.getElementById('directorCash').value) || 0;
+      
+      // Difference = Actual Deposit - Expected Deposit
+      const difference = actualDeposit - expectedDeposit;
+      
+      const diffEl = document.getElementById('depositDifference');
+      const diffBox = document.getElementById('depositBox');
+      const reasonSection = document.getElementById('depositDifferenceSection');
+      
+      diffEl.textContent = 'TZS ' + formatNumber(difference);
+      
+      if (difference === 0) {
+        diffEl.style.color = '#1e3a5f';
+        diffBox.classList.remove('card-danger', 'card-success');
+        reasonSection.classList.add('hidden');
+      } else if (difference > 0) {
+        diffEl.style.color = '#10b981';
+        diffBox.classList.add('card-success');
+        diffBox.classList.remove('card-danger');
+        reasonSection.classList.add('hidden');
+      } else {
+        diffEl.style.color = '#ef4444';
+        diffBox.classList.add('card-danger');
+        diffBox.classList.remove('card-success');
+        reasonSection.classList.remove('hidden');
+      }
+    };
+
+    window.selectDepositReason = function(reason) {
+      selectedDepositReason = reason;
+      
+      document.querySelectorAll('#depositDifferenceSection .reason-chip').forEach(chip => {
+        chip.classList.remove('selected');
+      });
+      event.target.classList.add('selected');
+    };
+
+    window.submitCashReport = function() {
+      const date = document.getElementById('reportDate').value;
+      const systemSales = Number(document.getElementById('systemSales').value) || 0;
+      const actualCash = Number(document.getElementById('actualCash').value) || 0;
+      const actualDeposit = Number(document.getElementById('actualDeposit').value) || 0;
+      const directorCash = Number(document.getElementById('directorCash').value) || 0;
+      
+      const cashDifference = actualCash - systemSales;
+      const depositDifference = actualDeposit - (actualCash - pocketTransactions.filter(t => t.date === date && t.type === 'TOPUP').reduce((sum, t) => sum + t.amount, 0));
+      
+      // Validate
+      if (cashDifference < 0 && !selectedCashReason && !document.getElementById('cashComment').value) {
+        showAlert('Please explain the cash difference', 'error');
+        return;
+      }
+      
+      if (depositDifference < 0 && !selectedDepositReason && !document.getElementById('depositComment').value) {
+        showAlert('Please explain why deposit is lower', 'error');
+        return;
+      }
+
+      const report = {
+        date,
+        systemSales,
+        actualCash,
+        cashDifference,
+        cashReason: selectedCashReason,
+        cashComment: document.getElementById('cashComment').value,
+        lipaMpesa: Number(document.getElementById('lipaMpesaAmount').value) || 0,
+        actualDeposit,
+        directorCash,
+        depositDifference,
+        depositReason: selectedDepositReason,
+        depositComment: document.getElementById('depositComment').value,
+        directorAmount: Number(document.getElementById('directorAmount').value) || 0
+      };
+
+      cashReports.unshift(report);
+      updateReportHistory();
+      
+      showAlert('Report saved successfully', 'success');
+      
+      // Clear form
+      document.getElementById('systemSales').value = '';
+      document.getElementById('actualCash').value = '';
+      document.getElementById('actualDeposit').value = '';
+      document.getElementById('directorCash').value = '';
+      document.getElementById('cashComment').value = '';
+      document.getElementById('depositComment').value = '';
+      document.getElementById('lipaMpesaAmount').value = '';
+      document.getElementById('directorAmount').value = '';
+      document.getElementById('cashDifferenceSection').classList.add('hidden');
+      document.getElementById('depositDifferenceSection').classList.add('hidden');
+      document.getElementById('lipaMpesaSection').classList.add('hidden');
+      
+      selectedCashReason = '';
+      selectedDepositReason = '';
+    };
+
+    window.loadCashReport = function() {
+      const date = document.getElementById('reportDate').value;
+      const report = cashReports.find(r => r.date === date);
+      
+      if (report) {
+        document.getElementById('systemSales').value = report.systemSales;
+        document.getElementById('actualCash').value = report.actualCash;
+        document.getElementById('actualDeposit').value = report.actualDeposit;
+        document.getElementById('directorCash').value = report.directorCash;
+        document.getElementById('cashComment').value = report.cashComment || '';
+        document.getElementById('depositComment').value = report.depositComment || '';
+        document.getElementById('lipaMpesaAmount').value = report.lipaMpesa || 0;
+        document.getElementById('directorAmount').value = report.directorAmount || 0;
+        
+        calculateCashDifference();
+        calculateDepositDifference();
+      } else {
+        // Clear form for new report
+        document.getElementById('systemSales').value = '';
+        document.getElementById('actualCash').value = '';
+        document.getElementById('actualDeposit').value = '';
+        document.getElementById('directorCash').value = '';
+        document.getElementById('cashComment').value = '';
+        document.getElementById('depositComment').value = '';
+        document.getElementById('lipaMpesaAmount').value = '';
+        document.getElementById('directorAmount').value = '';
+      }
+      
+      calculateExpectedDeposit();
+    };
+
+    function updateReportHistory() {
+      const el = document.getElementById('reportHistory');
+      
+      if (cashReports.length === 0) {
+        el.innerHTML = '<div class="subtle">No reports yet</div>';
+        return;
+      }
+
+      el.innerHTML = cashReports.map(r => `
+        <div style="padding: 12px; border-bottom: 1px solid #eee;">
+          <div style="display: flex; justify-content: space-between;">
+            <strong>${r.date}</strong>
+            <span>Sales: TZS ${formatNumber(r.systemSales)}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-top: 5px;">
+            <span>Cash Diff: <span style="color: ${r.cashDifference >= 0 ? '#10b981' : '#ef4444'}">TZS ${formatNumber(r.cashDifference)}</span></span>
+            <span>Deposit Diff: <span style="color: ${r.depositDifference >= 0 ? '#10b981' : '#ef4444'}">TZS ${formatNumber(r.depositDifference)}</span></span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ========== CATEGORIES ==========
+    function loadCategories() {
+      const select = document.getElementById('expenseCategory');
       const cats = [
         'Ambulance', 'Eye', 'Physiotherapy', 'USS', 'Nauli', 
         'Ufundi', 'Mengineyo', 'CBGY', 'Lipa Number', 'WAGOWA'
       ];
+      
       cats.forEach(cat => {
-        const option = document.createElement("option");
+        const option = document.createElement('option');
         option.value = cat;
         option.textContent = cat;
         select.appendChild(option);
       });
     }
 
-    async function loadCategories() {
-      // Using fallback for demo
-      useFallbackCategories();
-    }
-
     // ========== SAMPLE DATA ==========
     function loadSampleData() {
-      // Add sample reports based on your Google Sheet
-      const sampleReports = [
+      pocketTransactions = [
+        { date: '2026-03-01', type: 'TOPUP', amount: 50000, notes: 'From sales', balance: 50000 },
+        { date: '2026-03-01', type: 'DIRECTOR', amount: 100000, notes: 'Director top-up', balance: 150000 }
+      ];
+      pocketBalance = 150000;
+      
+      cashReports = [
         {
-          date: '2026-01-01',
-          openingBank: 195000,
-          openingPocket: 0,
-          sales: 980823,
-          bankDeposits: 0,
-          pocketExpenses: 0,
-          salesDirect: 0,
-          bankExpenses: 0,
-          pocketTopup: 0,
-          expectedBank: 195000,
-          expectedPocket: 980823,
-          actualBank: 193500,
-          actualPocket: 980823,
-          bankVariance: -1500,
-          pocketVariance: 0,
-          totalVariance: -1500,
-          reason: 'Bank charges'
-        },
-        {
-          date: '2026-01-02',
-          openingBank: 193500,
-          openingPocket: 980823,
-          sales: 30000,
-          bankDeposits: 0,
-          pocketExpenses: 37000,
-          salesDirect: 0,
-          bankExpenses: 0,
-          pocketTopup: 0,
-          expectedBank: 193500,
-          expectedPocket: 973823,
-          actualBank: 193500,
-          actualPocket: 973823,
-          bankVariance: 0,
-          pocketVariance: 0,
-          totalVariance: 0,
-          reason: ''
+          date: '2026-03-01',
+          systemSales: 450000,
+          actualCash: 445000,
+          cashDifference: -5000,
+          cashReason: 'Loss bila maelezo',
+          actualDeposit: 350000,
+          directorCash: 50000,
+          depositDifference: -45000,
+          depositReason: 'Given to Director',
+          directorAmount: 50000
         }
       ];
       
-      cashReports = sampleReports;
-      updateReportTable();
+      updatePocketDisplay();
+      updatePocketHistory();
+      updateReportHistory();
     }
 
-    // ========== UI HELPERS ==========
+    // ========== HELPERS ==========
     function showAlert(msg, type) {
       const el = document.getElementById('mainAlert');
       el.textContent = msg;
       el.className = `alert show ${type}`;
-      setTimeout(() => el.classList.remove("show"), 3000);
-    }
-
-    function showInlineAlert(elId, msg, type) {
-      const el = document.getElementById(elId);
-      el.textContent = msg;
-      el.className = `alert show ${type}`;
-    }
-
-    function clearAlert(elId) {
-      const el = document.getElementById(elId);
-      el.textContent = "";
-      el.className = "alert";
+      setTimeout(() => el.classList.remove('show'), 3000);
     }
 
     function formatNumber(num) {
       return Number(num || 0).toLocaleString('en-US');
-    }
-
-    function extractNumber(str) {
-      return Number(str.replace(/[^0-9.-]/g, '')) || 0;
-    }
-
-    function escapeHtml(str) {
-      return String(str ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
     }
   </script>
 </body>
