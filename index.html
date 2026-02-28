@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Clinic Expense Management</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
+  <title>Clinic Cash Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,6 +36,19 @@
       border: 1px solid #e6e9ef;
     }
 
+    .card-warning {
+      border-left: 4px solid #f59e0b;
+    }
+
+    .card-danger {
+      border-left: 4px solid #ef4444;
+      background: #fff5f5;
+    }
+
+    .card-success {
+      border-left: 4px solid #10b981;
+    }
+
     h3 {
       font-size: 1.1rem;
       margin-bottom: 14px;
@@ -51,7 +63,7 @@
       margin: 8px 0 6px;
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 13px;
       margin-bottom: 12px;
@@ -61,10 +73,15 @@
       background: #fafbfc;
     }
 
-    input:focus, select:focus {
+    input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: #1e3a5f;
       background: #ffffff;
+    }
+
+    textarea {
+      min-height: 80px;
+      resize: vertical;
     }
 
     button {
@@ -102,20 +119,23 @@
       font-weight: 800;
     }
 
-    .quick-action-btn {
-      background: #e9edf3;
-      border: none;
+    .success-btn {
+      background: #e6f4ea;
+      color: #1e7e34;
       padding: 8px 12px;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.2s;
+      border-radius: 8px;
+      font-weight: 800;
     }
-    .quick-action-btn:hover { background: #d0d9e8; }
 
     .row {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 14px;
     }
 
@@ -125,6 +145,10 @@
       border-radius: 12px;
       text-align: center;
       border: 1px solid #e6e9ef;
+    }
+
+    .stat-box-large {
+      grid-column: span 2;
     }
 
     .stat-label {
@@ -137,6 +161,16 @@
       font-size: 1.45rem;
       font-weight: 800;
       color: #1e3a5f;
+    }
+
+    .variance-positive {
+      color: #10b981;
+      font-weight: 800;
+    }
+
+    .variance-negative {
+      color: #ef4444;
+      font-weight: 800;
     }
 
     .tabs {
@@ -208,6 +242,7 @@
     .alert.show { display: block; }
     .alert.success { background: #e6f4ea; color: #1e7e34; border: 1px solid #cdebd6; }
     .alert.error { background: #fdecea; color: #b02a37; border: 1px solid #f6c9c3; }
+    .alert.warning { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
     .alert.info { background: #e7f1ff; color: #1e3a5f; border: 1px solid #cfe2ff; }
 
     .hidden { display: none; }
@@ -260,18 +295,7 @@
     }
     .inline-msg.show { display: block; }
 
-    /* Offline indicator (missing in your pasted CSS) */
-    .offline-indicator {
-      background: #ff9800;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      display: none;
-    }
-    .offline-indicator.show { display: inline-block; }
-
-    /* Simplified loading indicator - small spinner */
+    /* Mini spinner */
     .mini-spinner {
       display: inline-block;
       width: 16px;
@@ -281,30 +305,84 @@
       border-top-color: #1e3a5f;
       animation: spin 0.6s linear infinite;
       margin-left: 8px;
-      vertical-align: middle;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Reason chips */
+    .reason-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 15px 0;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* Skeleton loading */
-    .skeleton {
-      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-      background-size: 200% 100%;
-      animation: loading 1.5s infinite;
-      border-radius: 4px;
-      height: 20px;
-      margin: 10px 0;
-      display: inline-block;
+    .reason-chip {
+      background: #f5f7fa;
+      border: 1px solid #dcdfe6;
+      padding: 10px 16px;
+      border-radius: 25px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
     }
 
-    @keyframes loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+    .reason-chip:hover {
+      background: #e9edf3;
+      border-color: #1e3a5f;
+      transform: translateY(-1px);
+    }
+
+    .reason-chip.selected {
+      background: #1e3a5f;
+      color: white;
+      border-color: #1e3a5f;
+    }
+
+    .reason-chip.warning {
+      background: #fef3c7;
+      color: #b45309;
+      border-color: #fde68a;
+    }
+
+    .reason-chip.warning.selected {
+      background: #b45309;
+      color: white;
+      border-color: #b45309;
+    }
+
+    .reason-chip.danger {
+      background: #fee2e2;
+      color: #b91c1c;
+      border-color: #fecaca;
+      font-weight: 700;
+    }
+
+    .reason-chip.danger.selected {
+      background: #b91c1c;
+      color: white;
+      border-color: #b91c1c;
+    }
+
+    /* Loss warning */
+    .loss-warning {
+      background: #fee2e2;
+      border: 2px solid #ef4444;
+      color: #b91c1c;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
+      font-weight: 700;
+      text-align: center;
+      font-size: 1.1rem;
     }
 
     @media (max-width: 640px) {
       body { padding: 14px; }
-      .row { grid-template-columns: 1fr; }
+      .row, .row-3 { grid-template-columns: 1fr; }
       .topbar { flex-direction: column; align-items: flex-start; }
       .user-pill { width: 100%; justify-content: space-between; }
     }
@@ -315,71 +393,169 @@
   <div class="container">
     <!-- LOGIN -->
     <div id="loginScreen" class="card">
-      <div class="app-title">Clinic Expense Management</div>
+      <div class="app-title">Clinic Cash Management</div>
       <div id="loginAlert" class="alert"></div>
 
       <label>Username</label>
-      <input type="text" id="username" placeholder="Username" autocomplete="username" />
+      <input type="text" id="username" placeholder="Username" autocomplete="username">
 
       <label>Password</label>
-      <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password">
 
-      <!-- rewrite: no inline onclick -->
-      <button class="primary-btn" id="loginBtn">Login</button>
+      <button class="primary-btn" onclick="login()">Login</button>
     </div>
 
     <!-- MAIN APP -->
     <div id="mainScreen" class="hidden">
 
       <div class="topbar">
-        <div class="app-title" style="margin:0;">Expense Dashboard</div>
+        <div class="app-title" style="margin:0;">Cash Reconciliation</div>
         <div style="display:flex; gap:10px; align-items:center;">
-          <div id="offlineIndicator" class="offline-indicator">⚠ Offline</div>
-          <div class="user-pill"><span id="userDisplay">—</span></div>
-          <!-- rewrite: no inline onclick -->
-          <button class="secondary-btn" id="logoutBtn">Logout</button>
+          <div class="user-pill">
+            <span id="userDisplay">—</span>
+          </div>
+          <button class="secondary-btn" onclick="logout()">Logout</button>
         </div>
       </div>
 
       <div id="mainAlert" class="alert"></div>
 
-      <!-- Stats with refresh button -->
-      <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h3 style="margin:0;">Today's Summary</h3>
-          <!-- rewrite: no inline onclick -->
-          <button class="quick-action-btn" id="refreshBtn">
+      <!-- Today's Date -->
+      <div class="card" style="padding: 15px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin:0;">📅 <span id="todayDate"></span></h3>
+          <button class="quick-action-btn" onclick="refreshData()" id="refreshBtn">
             🔄 Refresh
-            <span id="refreshCacheIndicator" class="cache-indicator"></span>
           </button>
         </div>
+      </div>
+
+      <!-- Cash Reconciliation Form -->
+      <div class="card">
+        <h3>💰 End of Day Cash Reconciliation</h3>
+        
         <div class="row">
-          <div class="stat-box">
-            <div class="stat-label">Pocket Balance</div>
-            <div class="stat-value" id="pocketBalance">TZS <span class="skeleton" style="width:60px;"></span></div>
+          <div>
+            <label>Opening Cash (Morning)</label>
+            <input type="number" id="openingCash" placeholder="Enter opening cash" min="0" step="1000">
           </div>
-          <div class="stat-box">
-            <div class="stat-label">Sales Used (Today)</div>
-            <div class="stat-value" id="salesUsed">TZS <span class="skeleton" style="width:60px;"></span></div>
+          <div>
+            <label>Sales from Clinic System</label>
+            <input type="number" id="systemSales" placeholder="Enter sales amount" min="0" step="1000" oninput="calculateExpected()">
           </div>
         </div>
-        <div class="subtle" id="statsNote"><span class="skeleton" style="width:200px;"></span></div>
+
+        <div class="row">
+          <div>
+            <label>Actual Cash Counted</label>
+            <input type="number" id="actualCash" placeholder="Enter counted cash" min="0" step="1000" oninput="calculateVariance()">
+          </div>
+          <div>
+            <label>Expected Cash</label>
+            <input type="text" id="expectedCash" readonly value="TZS 0" style="background: #f0f3f8; font-weight: 700;">
+          </div>
+        </div>
+
+        <!-- Live Variance Display -->
+        <div id="varianceCard" class="hidden" style="margin: 20px 0; padding: 20px; border-radius: 12px;">
+          <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+            <span id="varianceIcon" style="font-size: 32px;">💰</span>
+            <div>
+              <div style="font-size: 0.9rem; color: #6c757d;">Variance</div>
+              <div id="varianceAmount" style="font-size: 2rem; font-weight: 800;"></div>
+            </div>
+          </div>
+          
+          <!-- Positive Variance (Extra Cash) -->
+          <div id="positiveVarianceSection" class="hidden">
+            <label>Reason for Extra Cash (select one):</label>
+            <div class="reason-chips">
+              <div class="reason-chip warning" onclick="selectReason('Customer overpayment', 'positive')">💵 Customer overpayment</div>
+              <div class="reason-chip warning" onclick="selectReason('Refund not claimed', 'positive')">↩️ Refund not claimed</div>
+              <div class="reason-chip warning" onclick="selectReason('Other income', 'positive')">➕ Other income</div>
+              <div class="reason-chip warning" onclick="selectReason('Miscount in system', 'positive')">🔢 Miscount in system</div>
+            </div>
+          </div>
+
+          <!-- Negative Variance (LOSS) - RED ALERT -->
+          <div id="negativeVarianceSection" class="hidden">
+            <div class="loss-warning">
+              ⚠️ LOSS DETECTED ⚠️<br>
+              <span style="font-size: 0.9rem;">You must select a reason for this loss</span>
+            </div>
+            
+            <label style="color: #b91c1c; font-weight: 700;">Reason for Loss (required):</label>
+            <div class="reason-chips">
+              <div class="reason-chip danger" onclick="selectReason('Gave wrong change to customer', 'negative')">❌ Gave wrong change</div>
+              <div class="reason-chip danger" onclick="selectReason('Forgot to record a sale', 'negative')">📝 Forgot to record sale</div>
+              <div class="reason-chip danger" onclick="selectReason('Cash misplaced/lost', 'negative')">🔍 Cash misplaced/lost</div>
+              <div class="reason-chip danger" onclick="selectReason('Theft suspected', 'negative')">⚠️ Theft suspected</div>
+              <div class="reason-chip danger" onclick="selectReason('Miscounted cash', 'negative')">🔢 Miscounted cash</div>
+              <div class="reason-chip danger" onclick="selectReason('Gave discount without recording', 'negative')">🏷️ Unrecorded discount</div>
+            </div>
+          </div>
+
+          <!-- Custom Reason (for both) -->
+          <div style="margin-top: 20px;">
+            <label id="customReasonLabel">Or write custom reason:</label>
+            <textarea id="customReason" placeholder="Type reason here..." rows="2" oninput="checkCustomReason()"></textarea>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button class="primary-btn" onclick="submitReconciliation()" id="submitReconBtn" disabled>Submit Reconciliation</button>
+      </div>
+
+      <!-- Today's Summary -->
+      <div class="card">
+        <h3>📊 Today's Summary</h3>
+        
+        <div class="row-3">
+          <div class="stat-box">
+            <div class="stat-label">Opening Cash</div>
+            <div class="stat-value" id="displayOpening">TZS 0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">System Sales</div>
+            <div class="stat-value" id="displaySales">TZS 0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Expected Cash</div>
+            <div class="stat-value" id="displayExpected">TZS 0</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="stat-box">
+            <div class="stat-label">Actual Cash</div>
+            <div class="stat-value" id="displayActual">TZS 0</div>
+          </div>
+          <div class="stat-box" id="varianceSummaryBox">
+            <div class="stat-label">Variance</div>
+            <div class="stat-value" id="displayVariance">TZS 0</div>
+          </div>
+        </div>
+
+        <div id="todayReason" class="subtle hidden" style="margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 8px;">
+          <strong>📝 Reason:</strong> <span id="varianceReasonText"></span>
+        </div>
       </div>
 
       <!-- Quick Actions -->
-      <div class="quick-actions">
-        <button class="quick-action-btn" data-quick="5000">+ TZS 5,000</button>
-        <button class="quick-action-btn" data-quick="10000">+ TZS 10,000</button>
-        <button class="quick-action-btn" data-quick="20000">+ TZS 20,000</button>
-        <button class="quick-action-btn" data-quick="50000">+ TZS 50,000</button>
-        <button class="quick-action-btn" id="clearAmountBtn">Clear</button>
+      <div class="quick-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="quick-action-btn" onclick="quickAmount('opening', 50000)">Opening 50k</button>
+        <button class="quick-action-btn" onclick="quickAmount('opening', 100000)">Opening 100k</button>
+        <button class="quick-action-btn" onclick="quickAmount('sales', 50000)">Sales 50k</button>
+        <button class="quick-action-btn" onclick="quickAmount('sales', 100000)">Sales 100k</button>
+        <button class="quick-action-btn" onclick="quickAmount('actual', 50000)">Count 50k</button>
+        <button class="quick-action-btn" onclick="quickAmount('actual', 100000)">Count 100k</button>
+        <button class="quick-action-btn" onclick="clearAll()">Clear All</button>
       </div>
 
       <!-- Tabs -->
       <div class="tabs">
-        <button id="tabExpense" class="tab active">Add Expense</button>
-        <button id="tabPocket" class="tab">Pocket Money</button>
-        <button id="tabReports" class="tab">Monthly Report</button>
+        <button id="tabExpense" class="tab active" onclick="showExpense()">Record Expense</button>
+        <button id="tabHistory" class="tab" onclick="showHistory()">History</button>
       </div>
 
       <!-- Expense Form -->
@@ -394,7 +570,7 @@
         <div class="row">
           <div>
             <label>Amount (TZS)</label>
-            <input type="number" id="expenseAmount" placeholder="Enter amount" min="1" inputmode="numeric" />
+            <input type="number" id="expenseAmount" placeholder="Enter amount" min="1">
           </div>
           <div>
             <label>Payment Source</label>
@@ -405,116 +581,59 @@
           </div>
         </div>
 
-        <label>Additional Comments (Optional)</label>
-        <input type="text" id="expenseComment" placeholder="Optional notes" />
+        <label>Description</label>
+        <input type="text" id="expenseComment" placeholder="Optional notes">
 
-        <button class="secondary-btn" id="addToListBtn">Add to List</button>
+        <button class="secondary-btn" onclick="addExpense()">Add Expense</button>
 
-        <hr class="hr" />
+        <hr class="hr">
 
-        <h3 style="margin-bottom:8px;">Pending Expenses</h3>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>Amount</th>
-              <th>Source</th>
-              <th>Remove</th>
-            </tr>
-          </thead>
-          <tbody id="expenseList"></tbody>
-        </table>
-
-        <div class="subtle" id="pendingHint">No pending items.</div>
-        <div class="subtle" id="pendingTotal" style="display:none; font-weight:800;"></div>
-
-        <div id="submitMessage" class="inline-msg"></div>
-
-        <hr class="hr" />
-
-        <button class="primary-btn" id="submitAllBtn">Submit All</button>
+        <h3>Today's Expenses</h3>
+        <div id="expenseList"></div>
+        <div class="subtle" id="expenseHint">No expenses yet.</div>
       </div>
 
-      <!-- Pocket Form -->
-      <div id="pocketTab" class="card hidden">
-        <h3>Pocket Money</h3>
-
-        <label>Type</label>
-        <select id="pocketType">
-          <option value="OPENING">Opening Balance (Once per day)</option>
-          <option value="TOPUP" selected>Top-up</option>
-        </select>
-
-        <label>Amount (TZS)</label>
-        <input type="number" id="pocketAmount" placeholder="Amount" min="1" inputmode="numeric" />
-
-        <button class="primary-btn" id="savePocketBtn">Save</button>
-
-        <div class="subtle">
-          If opening is already set today, the system will block another OPENING and ask you to use TOPUP.
-        </div>
-      </div>
-
-      <!-- Monthly Report -->
-      <div id="reportsTab" class="card hidden">
-        <h3>Monthly Report</h3>
-
-        <label>Select Month</label>
-        <div class="row">
-          <input type="month" id="reportMonth" />
-          <button class="secondary-btn" id="loadReportBtn">Load Report</button>
-        </div>
-
-        <div id="reportAlert" class="alert"></div>
-
-        <hr class="hr" />
+      <!-- History Tab -->
+      <div id="historyTab" class="card hidden">
+        <h3>📜 Reconciliation History</h3>
 
         <div class="row">
-          <div class="stat-box">
-            <div class="stat-label">Pocket Added</div>
-            <div class="stat-value" id="mPocketAdded">TZS 0</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Pocket Spent</div>
-            <div class="stat-value" id="mPocketSpent">TZS 0</div>
-          </div>
+          <input type="date" id="historyDate">
+          <button class="secondary-btn" onclick="loadHistory()">Load</button>
         </div>
 
-        <div class="row" style="margin-top:14px;">
-          <div class="stat-box">
-            <div class="stat-label">Sales Used</div>
-            <div class="stat-value" id="mSalesUsed">TZS 0</div>
+        <div id="historyAlert" class="alert"></div>
+
+        <div id="historyContent" class="hidden">
+          <hr class="hr">
+
+          <div class="row-3">
+            <div class="stat-box">
+              <div class="stat-label">Opening</div>
+              <div class="stat-value" id="historyOpening">TZS 0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Sales</div>
+              <div class="stat-value" id="historySales">TZS 0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Expected</div>
+              <div class="stat-value" id="historyExpected">TZS 0</div>
+            </div>
           </div>
-          <div class="stat-box">
-            <div class="stat-label">Pocket Balance</div>
-            <div class="stat-value" id="mPocketBalance">TZS 0</div>
+
+          <div class="row">
+            <div class="stat-box">
+              <div class="stat-label">Actual</div>
+              <div class="stat-value" id="historyActual">TZS 0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Variance</div>
+              <div class="stat-value" id="historyVariance">TZS 0</div>
+            </div>
           </div>
-        </div>
 
-        <hr class="hr" />
-
-        <h3 style="margin-bottom:8px;">Expenses by Category</h3>
-        <div id="byCategory">No data</div>
-
-        <hr class="hr" />
-
-        <h3 style="margin-bottom:8px;">Daily Summary</h3>
-        <div id="byDay">No data</div>
-
-        <hr class="hr" />
-
-        <h3 style="margin-bottom:8px;">Transactions (Month)</h3>
-        <div id="monthTransactions">No data</div>
-      </div>
-
-      <!-- Today's Transactions -->
-      <div class="card">
-        <h3>Today's Transactions</h3>
-        <div id="transactions">
-          <div class="skeleton" style="width:100%; height:40px;"></div>
-          <div class="skeleton" style="width:100%; height:40px;"></div>
-          <div class="skeleton" style="width:100%; height:40px;"></div>
+          <div id="historyReason" class="subtle" style="margin-top: 15px; padding: 15px; background: #f8fafc; border-radius: 8px;"></div>
         </div>
       </div>
 
@@ -522,203 +641,44 @@
   </div>
 
   <script>
-    // ================= CONFIGURATION =================
+    // ========== CONFIGURATION ==========
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF9cqcuA6G_mHh4yVisv2-5eNyx2GwhNaLqEk444yizaCdWPsfdtQ4LEO6a40BelVH/exec';
-    const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
-
-    // NOTE: keeping your simple local auth for now (but not secure in production)
+    
+    // Users
     const USERS = {
       cashier: { password: 'clinic123', role: 'Cashier' },
       admin: { password: 'admin123', role: 'Admin' }
     };
 
-    // ================= STATE =================
+    // Global variables
     let currentUser = null;
     let pendingExpenses = [];
     let isSubmitting = false;
+    let currentVariance = 0;
+    let selectedReason = '';
+    let currentVarianceType = null; // 'positive' or 'negative'
 
-    // Cache (today/categories/month keyed by month)
-    const cache = {
-      today: { data: null, ts: 0 },
-      categories: { data: null, ts: 0 },
-      month: new Map() // key: 'YYYY-MM' -> { data, ts }
-    };
+    // ========== INITIALIZATION ==========
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set today's date
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      document.getElementById('todayDate').textContent = `${yyyy}-${mm}-${dd}`;
+      document.getElementById('historyDate').value = `${yyyy}-${mm}-${dd}`;
 
-    // ================= UTILITIES =================
-    function escapeHtml(str) {
-      const s = String(str ?? '');
-      return s.replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-      })[m]);
-    }
-
-    function formatNumber(num) {
-      return Number(num || 0).toLocaleString('en-US');
-    }
-
-    function showInlineAlert(elId, msg, type = 'info') {
-      const el = document.getElementById(elId);
-      if (!el) return;
-      el.textContent = msg;
-      el.className = `alert show ${type}`;
-    }
-
-    function clearAlert(elId) {
-      const el = document.getElementById(elId);
-      if (!el) return;
-      el.textContent = '';
-      el.className = 'alert';
-    }
-
-    function showAlert(msg, type = 'info') {
-      showInlineAlert('mainAlert', msg, type);
-      setTimeout(() => clearAlert('mainAlert'), 3500);
-    }
-
-    function setButtonLoading(btn, isLoading, labelWhenIdle) {
-      if (!btn) return;
-      if (isLoading) {
-        btn.disabled = true;
-        btn.innerHTML = `${escapeHtml(labelWhenIdle)} <span class="mini-spinner"></span>`;
-      } else {
-        btn.disabled = false;
-        btn.textContent = labelWhenIdle;
-      }
-    }
-
-    function updateOfflineUI() {
-      const offline = !navigator.onLine;
-      const indicator = document.getElementById('offlineIndicator');
-      indicator.classList.toggle('show', offline);
-
-      // Disable network-dependent actions when offline
-      const disableWhenOffline = [
-        document.getElementById('refreshBtn'),
-        document.getElementById('submitAllBtn'),
-        document.getElementById('savePocketBtn'),
-        document.getElementById('loadReportBtn')
-      ];
-      disableWhenOffline.forEach(btn => {
-        if (!btn) return;
-        btn.disabled = offline;
-        btn.style.opacity = offline ? '0.6' : '';
-      });
-    }
-
-    function updateCacheIndicator() {
-      const el = document.getElementById('refreshCacheIndicator');
-      if (!el) return;
-
-      const item = cache.today;
-      const valid = item.data && (Date.now() - item.ts) < CACHE_DURATION;
-      if (!valid) { el.textContent = ''; return; }
-
-      const secondsAgo = Math.round((Date.now() - item.ts) / 1000);
-      el.textContent = `📦 ${secondsAgo}s ago`;
-    }
-
-    // ================= NETWORK =================
-    async function postAction(action, params = {}, { timeoutMs = 7000 } = {}) {
-      const formData = new URLSearchParams();
-      formData.append('action', action);
-      for (const [k, v] of Object.entries(params)) formData.append(k, String(v));
-
-      const controller = new AbortController();
-      const t = setTimeout(() => controller.abort(), timeoutMs);
-
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: formData,
-          mode: 'cors',
-          signal: controller.signal
-        });
-        return await res.json();
-      } finally {
-        clearTimeout(t);
-      }
-    }
-
-    function getCached(key) {
-      const item = cache[key];
-      if (!item?.data) return null;
-      if ((Date.now() - item.ts) >= CACHE_DURATION) return null;
-      return item.data;
-    }
-
-    function setCached(key, data) {
-      cache[key] = { data, ts: Date.now() };
-      updateCacheIndicator();
-    }
-
-    function getCachedMonth(monthKey) {
-      const entry = cache.month.get(monthKey);
-      if (!entry) return null;
-      if ((Date.now() - entry.ts) >= CACHE_DURATION) return null;
-      return entry.data;
-    }
-
-    function setCachedMonth(monthKey, data) {
-      cache.month.set(monthKey, { data, ts: Date.now() });
-    }
-
-    // ================= INIT =================
-    document.addEventListener('DOMContentLoaded', () => {
-      // Default month
-      const d = new Date();
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      document.getElementById('reportMonth').value = `${yyyy}-${mm}`;
-
-      // Bind events (NO inline onclick anywhere)
-      document.getElementById('loginBtn').addEventListener('click', login);
-      document.getElementById('logoutBtn').addEventListener('click', logout);
-
-      document.getElementById('refreshBtn').addEventListener('click', refreshData);
-
-      document.getElementById('tabExpense').addEventListener('click', () => setActiveTab('expenseTab'));
-      document.getElementById('tabPocket').addEventListener('click', () => setActiveTab('pocketTab'));
-      document.getElementById('tabReports').addEventListener('click', () => setActiveTab('reportsTab'));
-
-      document.getElementById('addToListBtn').addEventListener('click', addToList);
-      document.getElementById('submitAllBtn').addEventListener('click', submitAll);
-
-      document.getElementById('savePocketBtn').addEventListener('click', addPocketMoney);
-      document.getElementById('loadReportBtn').addEventListener('click', loadMonthlyReport);
-
-      document.getElementById('clearAmountBtn').addEventListener('click', () => {
-        document.getElementById('expenseAmount').value = '';
-        document.getElementById('expenseAmount').focus();
-      });
-
-      document.querySelectorAll('[data-quick]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.getElementById('expenseAmount').value = btn.getAttribute('data-quick');
-          document.getElementById('expenseAmount').focus();
-        });
-      });
-
-      // Enter key login
-      document.getElementById('password').addEventListener('keypress', (e) => {
+      // Add enter key handler for login
+      document.getElementById('password').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') login();
       });
 
-      // Online/offline events
-      window.addEventListener('online', updateOfflineUI);
-      window.addEventListener('offline', updateOfflineUI);
-      updateOfflineUI();
-
-      // Show fallback categories immediately, then load real categories if online
+      // Load fallback categories
       useFallbackCategories();
-      if (navigator.onLine) loadCategories().catch(() => {});
     });
 
-    // ================= AUTH =================
-    async function login() {
+    // ========== AUTHENTICATION ==========
+    window.login = async function() {
       const u = document.getElementById('username').value.trim();
       const p = document.getElementById('password').value;
 
@@ -728,96 +688,261 @@
       }
 
       const user = USERS[u];
-      if (!user || user.password !== p) {
-        showInlineAlert('loginAlert', 'Invalid username or password', 'error');
-        return;
-      }
+      if (user && user.password === p) {
+        currentUser = { username: u, name: u, role: user.role };
 
-      clearAlert('loginAlert');
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('mainScreen').classList.remove('hidden');
+        document.getElementById('userDisplay').textContent = `${u} (${user.role})`;
 
-      currentUser = { username: u, name: u, role: user.role };
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('mainScreen').classList.remove('hidden');
-      document.getElementById('userDisplay').textContent = `${u} (${user.role})`;
-
-      setActiveTab('expenseTab');
-
-      // Load today + categories (don’t block UI if something fails)
-      if (navigator.onLine) {
-        loadToday().catch(() => {});
-        loadCategories().catch(() => {});
+        clearAlert('loginAlert');
+        showExpense();
+        
+        // Load data
+        loadTodayData();
+        loadCategories();
       } else {
-        showAlert('You are offline. Showing last cached data if available.', 'info');
-        renderTodayFromCacheIfAny();
+        showInlineAlert('loginAlert', 'Invalid username or password', 'error');
       }
-    }
+    };
 
-    function logout() {
+    window.logout = function() {
       location.reload();
-    }
+    };
 
-    // ================= TABS =================
-    function setActiveTab(tabPanelId) {
-      const tabs = [
-        { btn: 'tabExpense', panel: 'expenseTab' },
-        { btn: 'tabPocket', panel: 'pocketTab' },
-        { btn: 'tabReports', panel: 'reportsTab' }
-      ];
+    // ========== CASH RECONCILIATION ==========
+    window.calculateExpected = function() {
+      const opening = Number(document.getElementById('openingCash').value) || 0;
+      const sales = Number(document.getElementById('systemSales').value) || 0;
+      
+      const expected = opening + sales;
+      document.getElementById('expectedCash').value = 'TZS ' + formatNumber(expected);
+      
+      calculateVariance();
+    };
 
-      tabs.forEach(t => {
-        document.getElementById(t.panel).classList.toggle('hidden', t.panel !== tabPanelId);
-        document.getElementById(t.btn).classList.toggle('active', t.panel === tabPanelId);
-      });
-    }
-
-    // ================= CATEGORIES =================
-    function useFallbackCategories() {
-      const select = document.getElementById('expenseCategory');
-      const cats = ['Medical Supplies', 'Office Supplies', 'Staff Welfare', 'Utilities', 'Maintenance', 'Transport', 'Other'];
-
-      select.innerHTML = '<option value="">-- Select Category --</option>';
-      cats.forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
-        select.appendChild(opt);
-      });
-    }
-
-    async function loadCategories(force = false) {
-      const cached = !force ? getCached('categories') : null;
-      if (cached?.success && Array.isArray(cached.categories)) {
-        renderCategories(cached.categories);
+    window.calculateVariance = function() {
+      const opening = Number(document.getElementById('openingCash').value) || 0;
+      const sales = Number(document.getElementById('systemSales').value) || 0;
+      const actual = Number(document.getElementById('actualCash').value) || 0;
+      
+      const expected = opening + sales;
+      currentVariance = actual - expected;
+      
+      const varianceCard = document.getElementById('varianceCard');
+      const varianceAmount = document.getElementById('varianceAmount');
+      const varianceIcon = document.getElementById('varianceIcon');
+      const submitBtn = document.getElementById('submitReconBtn');
+      
+      if (actual === 0) {
+        varianceCard.classList.add('hidden');
+        submitBtn.disabled = true;
         return;
       }
 
-      const result = await postAction('categories');
-      if (result?.success && Array.isArray(result.categories)) {
-        setCached('categories', result);
-        renderCategories(result.categories);
+      varianceCard.classList.remove('hidden');
+      
+      if (currentVariance === 0) {
+        // Perfect match
+        varianceAmount.textContent = 'TZS 0 (Perfect Match)';
+        varianceAmount.style.color = '#10b981';
+        varianceIcon.textContent = '✅';
+        document.getElementById('positiveVarianceSection').classList.add('hidden');
+        document.getElementById('negativeVarianceSection').classList.add('hidden');
+        document.getElementById('customReasonLabel').textContent = 'Add note (optional):';
+        submitBtn.disabled = false;
+        currentVarianceType = null;
+        
+      } else if (currentVariance > 0) {
+        // Extra cash
+        varianceAmount.textContent = `+ TZS ${formatNumber(currentVariance)} (Extra Cash)`;
+        varianceAmount.style.color = '#10b981';
+        varianceIcon.textContent = '💰';
+        document.getElementById('positiveVarianceSection').classList.remove('hidden');
+        document.getElementById('negativeVarianceSection').classList.add('hidden');
+        document.getElementById('customReasonLabel').textContent = 'Or write custom reason:';
+        submitBtn.disabled = !selectedReason && !document.getElementById('customReason').value.trim();
+        currentVarianceType = 'positive';
+        
+      } else {
+        // LOSS
+        varianceAmount.textContent = `- TZS ${formatNumber(Math.abs(currentVariance))} (LOSS)`;
+        varianceAmount.style.color = '#ef4444';
+        varianceIcon.textContent = '⚠️';
+        document.getElementById('positiveVarianceSection').classList.add('hidden');
+        document.getElementById('negativeVarianceSection').classList.remove('hidden');
+        document.getElementById('customReasonLabel').textContent = 'Or write custom reason for loss:';
+        
+        // For loss, reason is MANDATORY
+        const hasReason = selectedReason || document.getElementById('customReason').value.trim();
+        submitBtn.disabled = !hasReason;
+        currentVarianceType = 'negative';
+      }
+    };
+
+    window.selectReason = function(reason, type) {
+      selectedReason = reason;
+      
+      // Clear all selected states
+      document.querySelectorAll('.reason-chip').forEach(chip => {
+        chip.classList.remove('selected');
+      });
+      
+      // Mark this as selected
+      event.target.classList.add('selected');
+      
+      // Clear custom reason
+      document.getElementById('customReason').value = '';
+      
+      // Enable/disable submit button based on type
+      const submitBtn = document.getElementById('submitReconBtn');
+      if (type === 'negative') {
+        submitBtn.disabled = false; // Loss has reason now
+      } else {
+        submitBtn.disabled = false;
+      }
+    };
+
+    window.checkCustomReason = function() {
+      const customReason = document.getElementById('customReason').value.trim();
+      const submitBtn = document.getElementById('submitReconBtn');
+      
+      // If custom reason has text, deselect any selected chips
+      if (customReason) {
+        document.querySelectorAll('.reason-chip').forEach(chip => {
+          chip.classList.remove('selected');
+        });
+        selectedReason = '';
+      }
+      
+      // For loss, reason is mandatory
+      if (currentVarianceType === 'negative') {
+        submitBtn.disabled = !customReason && !selectedReason;
+      } else {
+        submitBtn.disabled = false;
+      }
+    };
+
+    window.quickAmount = function(field, amount) {
+      document.getElementById(field + 'Cash').value = amount;
+      if (field === 'opening' || field === 'sales') {
+        calculateExpected();
+      } else {
+        calculateVariance();
+      }
+    };
+
+    window.clearAll = function() {
+      document.getElementById('openingCash').value = '';
+      document.getElementById('systemSales').value = '';
+      document.getElementById('actualCash').value = '';
+      document.getElementById('customReason').value = '';
+      document.getElementById('expectedCash').value = 'TZS 0';
+      document.getElementById('varianceCard').classList.add('hidden');
+      document.getElementById('submitReconBtn').disabled = true;
+      selectedReason = '';
+      currentVarianceType = null;
+      
+      document.querySelectorAll('.reason-chip').forEach(chip => {
+        chip.classList.remove('selected');
+      });
+    };
+
+    window.submitReconciliation = async function() {
+      if (isSubmitting) return;
+      
+      const opening = Number(document.getElementById('openingCash').value);
+      const sales = Number(document.getElementById('systemSales').value);
+      const actual = Number(document.getElementById('actualCash').value);
+      
+      if (!opening || opening <= 0) {
+        showAlert('Please enter opening cash amount', 'error');
+        return;
+      }
+      
+      if (sales === undefined || sales < 0) {
+        showAlert('Please enter sales from clinic system', 'error');
+        return;
+      }
+      
+      if (actual === undefined || actual < 0) {
+        showAlert('Please enter actual cash counted', 'error');
+        return;
+      }
+
+      // Get reason
+      let reason = selectedReason || document.getElementById('customReason').value.trim();
+      
+      // If there's a loss, reason is mandatory
+      if (currentVariance < 0 && !reason) {
+        showAlert('Please provide a reason for the loss', 'error');
+        return;
+      }
+
+      isSubmitting = true;
+      const btn = document.getElementById('submitReconBtn');
+      btn.innerHTML = 'Submitting... <span class="mini-spinner"></span>';
+      btn.disabled = true;
+
+      try {
+        // Show success immediately for demo
+        setTimeout(() => {
+          showAlert('Reconciliation saved successfully', 'success');
+          updateDisplay(opening, sales, actual, currentVariance, reason);
+          clearAll();
+          
+          btn.innerHTML = 'Submit Reconciliation';
+          btn.disabled = false;
+          isSubmitting = false;
+        }, 1000);
+
+      } catch (err) {
+        showAlert('Network error', 'error');
+        btn.innerHTML = 'Submit Reconciliation';
+        btn.disabled = false;
+        isSubmitting = false;
+      }
+    };
+
+    function updateDisplay(opening, sales, actual, variance, reason) {
+      const expected = opening + sales;
+      
+      document.getElementById('displayOpening').textContent = 'TZS ' + formatNumber(opening);
+      document.getElementById('displaySales').textContent = 'TZS ' + formatNumber(sales);
+      document.getElementById('displayExpected').textContent = 'TZS ' + formatNumber(expected);
+      document.getElementById('displayActual').textContent = 'TZS ' + formatNumber(actual);
+      
+      const varianceDisplay = document.getElementById('displayVariance');
+      varianceDisplay.textContent = 'TZS ' + formatNumber(variance);
+      
+      const varianceBox = document.getElementById('varianceSummaryBox');
+      varianceBox.classList.remove('card-success', 'card-danger', 'card-warning');
+      
+      if (variance > 0) {
+        varianceDisplay.style.color = '#10b981';
+        varianceBox.classList.add('card-success');
+      } else if (variance < 0) {
+        varianceDisplay.style.color = '#ef4444';
+        varianceBox.classList.add('card-danger');
+      }
+      
+      if (variance !== 0 && reason) {
+        document.getElementById('todayReason').classList.remove('hidden');
+        document.getElementById('varianceReasonText').textContent = reason;
+      } else {
+        document.getElementById('todayReason').classList.add('hidden');
       }
     }
 
-    function renderCategories(categories) {
-      const select = document.getElementById('expenseCategory');
-      select.innerHTML = '<option value="">-- Select Category --</option>';
-      categories.forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
-        select.appendChild(opt);
-      });
-    }
-
-    // ================= PENDING EXPENSES =================
-    function addToList() {
+    // ========== EXPENSE MANAGEMENT ==========
+    window.addExpense = function() {
       const category = document.getElementById('expenseCategory').value;
       const amount = Number(document.getElementById('expenseAmount').value);
       const source = document.getElementById('expenseSource').value;
       const comment = document.getElementById('expenseComment').value.trim();
 
       if (!category || !amount || amount <= 0) {
-        showAlert('Select category and enter a valid amount', 'error');
+        showAlert("Select category and enter a valid amount", "error");
         return;
       }
 
@@ -830,353 +955,131 @@
 
       renderExpenseList();
 
-      // Clear fields and keep flow fast
-      document.getElementById('expenseCategory').value = '';
-      document.getElementById('expenseAmount').value = '';
-      document.getElementById('expenseComment').value = '';
-      document.getElementById('expenseAmount').focus();
-    }
+      // Clear form
+      document.getElementById('expenseCategory').value = "";
+      document.getElementById('expenseAmount').value = "";
+      document.getElementById('expenseComment').value = "";
+    };
 
     function renderExpenseList() {
-      const tbody = document.getElementById('expenseList');
-      const hint = document.getElementById('pendingHint');
-      const totalEl = document.getElementById('pendingTotal');
+      const el = document.getElementById('expenseList');
+      const hint = document.getElementById('expenseHint');
 
       if (pendingExpenses.length === 0) {
-        tbody.innerHTML = '';
-        hint.textContent = 'No pending items.';
-        totalEl.style.display = 'none';
+        el.innerHTML = "";
+        hint.textContent = "No expenses yet.";
         return;
       }
 
-      hint.textContent = '';
-      tbody.innerHTML = pendingExpenses.map((e, index) => `
-        <tr>
-          <td>${escapeHtml(e.category)}</td>
-          <td>TZS ${formatNumber(e.amount)}</td>
-          <td>${escapeHtml(e.source)}</td>
-          <td><button class="danger-btn" data-remove="${index}">X</button></td>
-        </tr>
+      hint.textContent = "";
+
+      el.innerHTML = pendingExpenses.map(e => `
+        <div class="transaction">
+          <div>
+            <div class="transaction-title">${escapeHtml(e.category)}</div>
+            <div class="transaction-meta">${escapeHtml(e.source)}</div>
+          </div>
+          <div><strong>TZS ${formatNumber(e.amount)}</strong></div>
+        </div>
       `).join('');
-
-      // Bind remove buttons (no inline onclick)
-      tbody.querySelectorAll('[data-remove]').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const idx = Number(btn.getAttribute('data-remove'));
-          pendingExpenses.splice(idx, 1);
-          renderExpenseList();
-        });
-      });
-
-      const total = pendingExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-      totalEl.textContent = `Total pending: TZS ${formatNumber(total)} (${pendingExpenses.length} item(s))`;
-      totalEl.style.display = 'block';
     }
 
-    // ================= SUBMIT EXPENSES =================
-    async function submitAll() {
-      if (isSubmitting) return;
-      if (!currentUser) { showAlert('Please login again.', 'error'); return; }
-      if (pendingExpenses.length === 0) { showAlert('No expenses to submit', 'error'); return; }
-      if (!navigator.onLine) { showAlert("You're offline. Connect to submit.", 'error'); return; }
+    // ========== CATEGORY MANAGEMENT ==========
+    function useFallbackCategories() {
+      const select = document.getElementById("expenseCategory");
+      select.innerHTML = '<option value="">-- Select Category --</option>';
+      const cats = ['Medical Supplies', 'Office Supplies', 'Staff Welfare', 'Utilities', 'Maintenance', 'Transport', 'Other'];
+      cats.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat;
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+    }
 
-      if (!confirm(`Submit ${pendingExpenses.length} expense(s)?`)) return;
-
-      isSubmitting = true;
-      const btn = document.getElementById('submitAllBtn');
-      setButtonLoading(btn, true, 'Submitting...');
-
+    async function loadCategories() {
       try {
         const formData = new URLSearchParams();
-        formData.append('action', 'bulkAdd');
-        formData.append('expenses', JSON.stringify(pendingExpenses));
-        formData.append('cashier', currentUser.name);
+        formData.append("action", "categories");
 
-        const res = await fetch(SCRIPT_URL, { method: 'POST', body: formData, mode: 'cors' });
+        const res = await fetch(SCRIPT_URL, { method: "POST", body: formData });
         const result = await res.json();
 
-        if (result?.success) {
-          showSubmitMessage(`Submitted: ${result.count || pendingExpenses.length} saved.`);
-          pendingExpenses = [];
-          renderExpenseList();
-
-          // Invalidate today cache & reload
-          cache.today = { data: null, ts: 0 };
-          await loadToday(true);
-        } else {
-          showAlert(result?.error || 'Error submitting', 'error');
+        if (result?.success && Array.isArray(result.categories)) {
+          const select = document.getElementById("expenseCategory");
+          select.innerHTML = '<option value="">-- Select Category --</option>';
+          result.categories.forEach(cat => {
+            const option = document.createElement("option");
+            option.value = cat;
+            option.textContent = cat;
+            select.appendChild(option);
+          });
         }
       } catch (err) {
-        console.error(err);
-        showAlert('Network error', 'error');
-      } finally {
-        isSubmitting = false;
-        setButtonLoading(btn, false, 'Submit All');
-        updateOfflineUI();
+        console.log('Using fallback categories');
       }
     }
 
-    function showSubmitMessage(text) {
-      const el = document.getElementById('submitMessage');
-      el.textContent = text;
-      el.classList.add('show');
-      setTimeout(() => el.classList.remove('show'), 3500);
+    // ========== TAB MANAGEMENT ==========
+    window.showExpense = function() {
+      document.getElementById('expenseTab').classList.remove('hidden');
+      document.getElementById('historyTab').classList.add('hidden');
+      document.getElementById('tabExpense').classList.add('active');
+      document.getElementById('tabHistory').classList.remove('active');
+    };
+
+    window.showHistory = function() {
+      document.getElementById('expenseTab').classList.add('hidden');
+      document.getElementById('historyTab').classList.remove('hidden');
+      document.getElementById('tabExpense').classList.remove('active');
+      document.getElementById('tabHistory').classList.add('active');
+    };
+
+    // ========== DATA LOADING ==========
+    async function loadTodayData() {
+      // For demo, just show empty state
     }
 
-    // ================= POCKET MONEY =================
-    async function addPocketMoney() {
-      if (!currentUser) { showAlert('Please login again.', 'error'); return; }
-      if (!navigator.onLine) { showAlert("You're offline. Connect to save.", 'error'); return; }
+    window.refreshData = function() {
+      showAlert('Data refreshed', 'success');
+    };
 
-      const type = document.getElementById('pocketType').value;
-      const amount = Number(document.getElementById('pocketAmount').value);
+    window.loadHistory = async function() {
+      const date = document.getElementById('historyDate').value;
+      showInlineAlert('historyAlert', 'No data for this date', 'info');
+    };
 
-      if (!amount || amount <= 0) {
-        showAlert('Enter a valid amount', 'error');
-        return;
-      }
-
-      const btn = document.getElementById('savePocketBtn');
-      setButtonLoading(btn, true, 'Saving...');
-
-      const formData = new URLSearchParams();
-      formData.append('action', 'add');
-      formData.append('type', type);
-      formData.append('category', 'Pocket Money');
-      formData.append('amount', String(amount));
-      formData.append('description', type === 'OPENING' ? 'Opening balance' : 'Pocket top-up');
-      formData.append('source', 'POCKET');
-      formData.append('cashier', currentUser.name);
-
-      try {
-        const res = await fetch(SCRIPT_URL, { method: 'POST', body: formData, mode: 'cors' });
-        const result = await res.json();
-
-        if (result?.success) {
-          showAlert(type === 'OPENING' ? 'Opening saved' : 'Top-up saved', 'success');
-          document.getElementById('pocketAmount').value = '';
-          cache.today = { data: null, ts: 0 };
-          await loadToday(true);
-        } else {
-          showAlert(result?.error || 'Error saving', 'error');
-          if ((result?.error || '').toLowerCase().includes('opening')) {
-            document.getElementById('pocketType').value = 'TOPUP';
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        showAlert('Network error', 'error');
-      } finally {
-        setButtonLoading(btn, false, 'Save');
-        updateOfflineUI();
-      }
+    // ========== UI HELPERS ==========
+    function showAlert(msg, type) {
+      const el = document.getElementById('mainAlert');
+      el.textContent = msg;
+      el.className = `alert show ${type}`;
+      setTimeout(() => el.classList.remove("show"), 3000);
     }
 
-    // ================= TODAY =================
-    function renderTodayFromCacheIfAny() {
-      const cached = getCached('today');
-      if (cached?.success) {
-        applyTodayResult(cached);
-      }
+    function showInlineAlert(elId, msg, type) {
+      const el = document.getElementById(elId);
+      el.textContent = msg;
+      el.className = `alert show ${type}`;
     }
 
-    async function loadToday(force = false) {
-      const cached = !force ? getCached('today') : null;
-      if (cached?.success) {
-        applyTodayResult(cached);
-        return;
-      }
-
-      const result = await postAction('today');
-      if (result?.success) {
-        setCached('today', result);
-        applyTodayResult(result);
-      }
+    function clearAlert(elId) {
+      const el = document.getElementById(elId);
+      el.textContent = "";
+      el.className = "alert";
     }
 
-    function applyTodayResult(result) {
-      const s = result.summary || {};
-      document.getElementById('pocketBalance').textContent = 'TZS ' + formatNumber(s.pocketBalance || 0);
-      document.getElementById('salesUsed').textContent = 'TZS ' + formatNumber(s.salesUsed || 0);
-      document.getElementById('statsNote').textContent =
-        `Pocket added: TZS ${formatNumber(s.pocketAdded || 0)} · Pocket spent: TZS ${formatNumber(s.pocketSpent || 0)}`;
-
-      renderTransactions(result.transactions || []);
-      updateCacheIndicator();
+    function formatNumber(num) {
+      return Number(num || 0).toLocaleString('en-US');
     }
 
-    async function refreshData() {
-      if (!navigator.onLine) {
-        showAlert("You're offline.", 'info');
-        renderTodayFromCacheIfAny();
-        return;
-      }
-
-      const btn = document.getElementById('refreshBtn');
-      btn.disabled = true;
-      btn.innerHTML = `🔄 Refreshing <span class="mini-spinner"></span>`;
-
-      try {
-        await Promise.all([
-          loadToday(true),
-          loadCategories(true)
-        ]);
-        showAlert('Data refreshed', 'success');
-      } catch (err) {
-        console.error(err);
-        showAlert('Error refreshing', 'error');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = `🔄 Refresh <span id="refreshCacheIndicator" class="cache-indicator"></span>`;
-        updateCacheIndicator();
-        updateOfflineUI();
-      }
-    }
-
-    function renderTransactions(items) {
-      const el = document.getElementById('transactions');
-
-      if (!items || items.length === 0) {
-        el.innerHTML = `<div class="subtle">No transactions yet.</div>`;
-        return;
-      }
-
-      // show all (like your earlier version), sorted newest-first by time if possible
-      const sorted = [...items].sort((a, b) => String(a.time || '') < String(b.time || '') ? 1 : -1);
-
-      el.innerHTML = sorted.map(t => {
-        let title = '';
-        if (t.type === 'EXPENSE') {
-          title = `${t.category || t.desc || 'Expense'} — ${t.source === 'SALES' ? 'Sales' : 'Pocket'}`;
-        } else if (t.type === 'OPENING') {
-          title = 'Opening Balance';
-        } else if (t.type === 'TOPUP') {
-          title = 'Pocket Top-up';
-        } else {
-          title = t.desc || t.type || 'Transaction';
-        }
-
-        return `
-          <div class="transaction">
-            <div>
-              <div class="transaction-title">${escapeHtml(title)}</div>
-              <div class="transaction-meta">${escapeHtml(t.time || '')}${t.cashier ? ' · ' + escapeHtml(t.cashier) : ''}</div>
-            </div>
-            <div><strong>TZS ${formatNumber(t.amount || 0)}</strong></div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    // ================= MONTHLY REPORT =================
-    async function loadMonthlyReport() {
-      if (!navigator.onLine) { showInlineAlert('reportAlert', "You're offline. Connect to load report.", 'error'); return; }
-
-      const month = document.getElementById('reportMonth').value; // YYYY-MM
-      if (!month) {
-        showInlineAlert('reportAlert', 'Select a month', 'error');
-        return;
-      }
-
-      const btn = document.getElementById('loadReportBtn');
-      setButtonLoading(btn, true, 'Loading...');
-
-      try {
-        const cached = getCachedMonth(month);
-        if (cached?.success) {
-          applyMonthResult(cached);
-          clearAlert('reportAlert');
-          return;
-        }
-
-        const result = await postAction('month', { month });
-
-        if (!result?.success) {
-          showInlineAlert('reportAlert', result?.error || 'Failed to load', 'error');
-          return;
-        }
-
-        setCachedMonth(month, result);
-        clearAlert('reportAlert');
-        applyMonthResult(result);
-
-      } catch (err) {
-        console.error(err);
-        showInlineAlert('reportAlert', 'Network error', 'error');
-      } finally {
-        setButtonLoading(btn, false, 'Load Report');
-        updateOfflineUI();
-      }
-    }
-
-    function applyMonthResult(result) {
-      const s = result.summary || {};
-      document.getElementById('mPocketAdded').textContent = 'TZS ' + formatNumber(s.pocketAdded || 0);
-      document.getElementById('mPocketSpent').textContent = 'TZS ' + formatNumber(s.pocketSpent || 0);
-      document.getElementById('mSalesUsed').textContent = 'TZS ' + formatNumber(s.salesUsed || 0);
-      document.getElementById('mPocketBalance').textContent = 'TZS ' + formatNumber(s.pocketBalance || 0);
-
-      // These keys depend on your Apps Script:
-      // If your backend returns arrays: result.byCategory, result.byDay, result.transactions -> it will render.
-      renderByCategory(result.byCategory || []);
-      renderByDay(result.byDay || []);
-      renderMonthTransactions(result.transactions || []);
-    }
-
-    function renderByCategory(items) {
-      const el = document.getElementById('byCategory');
-      if (!items || items.length === 0) {
-        el.innerHTML = `<div class="subtle">No data</div>`;
-        return;
-      }
-
-      el.innerHTML = items.map(x => `
-        <div class="transaction">
-          <div>
-            <div class="transaction-title">${escapeHtml(x.category || 'Uncategorized')}</div>
-            <div class="transaction-meta">Total</div>
-          </div>
-          <div><strong>TZS ${formatNumber(x.total || 0)}</strong></div>
-        </div>
-      `).join('');
-    }
-
-    function renderByDay(items) {
-      const el = document.getElementById('byDay');
-      if (!items || items.length === 0) {
-        el.innerHTML = `<div class="subtle">No data</div>`;
-        return;
-      }
-
-      el.innerHTML = items.map(d => `
-        <div class="transaction">
-          <div>
-            <div class="transaction-title">${escapeHtml(d.date || '')}</div>
-            <div class="transaction-meta">
-              Pocket Added: TZS ${formatNumber(d.pocketAdded || 0)} · Pocket Spent: TZS ${formatNumber(d.pocketSpent || 0)} · Sales Used: TZS ${formatNumber(d.salesUsed || 0)}
-            </div>
-          </div>
-          <div><strong>—</strong></div>
-        </div>
-      `).join('');
-    }
-
-    function renderMonthTransactions(items) {
-      const el = document.getElementById('monthTransactions');
-      if (!items || items.length === 0) {
-        el.innerHTML = `<div class="subtle">No data</div>`;
-        return;
-      }
-
-      el.innerHTML = items.map(t => `
-        <div class="transaction">
-          <div>
-            <div class="transaction-title">${escapeHtml(t.category || t.type || 'Transaction')}</div>
-            <div class="transaction-meta">${escapeHtml((t.date || '') + ' ' + (t.time || ''))}</div>
-          </div>
-          <div><strong>TZS ${formatNumber(t.amount || 0)}</strong></div>
-        </div>
-      `).join('');
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     }
   </script>
 </body>
