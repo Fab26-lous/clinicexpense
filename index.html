@@ -1,602 +1,919 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Clinic Expense Management</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clinic Expense Management</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        body {
-            font-family: "Segoe UI", Roboto, sans-serif;
-            background: #f4f6f9;
-            padding: 24px;
-            color: #2c3e50;
-        }
+    body {
+      font-family: "Segoe UI", Roboto, sans-serif;
+      background: #f4f6f9;
+      padding: 24px;
+      color: #2c3e50;
+    }
 
-        .container {
-            max-width: 750px;
-            margin: auto;
-        }
+    .container { max-width: 820px; margin: auto; }
 
-        .app-title {
-            font-size: 1.6rem;
-            font-weight: 600;
-            color: #1e3a5f;
-            margin-bottom: 20px;
-        }
+    .app-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin-bottom: 18px;
+      letter-spacing: .2px;
+    }
 
-        .card {
-            background: #ffffff;
-            border-radius: 14px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border: 1px solid #e6e9ef;
-        }
+    .card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      border: 1px solid #e6e9ef;
+    }
 
-        h3 {
-            font-size: 1.1rem;
-            margin-bottom: 16px;
-            font-weight: 600;
-            color: #1e3a5f;
-        }
+    h3 {
+      font-size: 1.1rem;
+      margin-bottom: 14px;
+      font-weight: 700;
+      color: #1e3a5f;
+    }
 
-        input, select {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 14px;
-            border: 1px solid #dcdfe6;
-            border-radius: 8px;
-            font-size: 15px;
-            background: #fafbfc;
-        }
+    label {
+      display: block;
+      font-size: 0.85rem;
+      color: #555;
+      margin: 8px 0 6px;
+    }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: #1e3a5f;
-            background: #ffffff;
-        }
+    input, select {
+      width: 100%;
+      padding: 13px;
+      margin-bottom: 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 10px;
+      font-size: 15px;
+      background: #fafbfc;
+    }
 
-        button {
-            padding: 14px;
-            border-radius: 8px;
-            border: none;
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-        }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #1e3a5f;
+      background: #ffffff;
+    }
 
-        .primary-btn {
-            width: 100%;
-            background: #1e3a5f;
-            color: white;
-        }
+    button {
+      padding: 13px 14px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: transform .04s ease, opacity .12s ease;
+    }
 
-        .primary-btn:hover {
-            background: #162c47;
-        }
+    button:active { transform: translateY(1px); }
 
-        .secondary-btn {
-            background: #e9edf3;
-            color: #1e3a5f;
-            padding: 8px 16px;
-        }
+    .primary-btn {
+      width: 100%;
+      background: #1e3a5f;
+      color: white;
+    }
 
-        .row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
+    .primary-btn:hover { opacity: .95; }
 
-        .stat-box {
-            background: #f8fafc;
-            padding: 18px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid #e6e9ef;
-        }
+    .secondary-btn {
+      background: #e9edf3;
+      color: #1e3a5f;
+      padding: 10px 14px;
+      font-weight: 700;
+    }
 
-        .stat-label {
-            font-size: 0.85rem;
-            color: #6c757d;
-            margin-bottom: 6px;
-        }
+    .danger-btn {
+      background: #fdecea;
+      color: #b02a37;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 800;
+    }
 
-        .stat-value {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #1e3a5f;
-        }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
 
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+    .stat-box {
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid #e6e9ef;
+    }
 
-        .tab {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #dcdfe6;
-            background: #f5f7fa;
-            cursor: pointer;
-            font-weight: 500;
-        }
+    .stat-label {
+      font-size: 0.85rem;
+      color: #6c757d;
+      margin-bottom: 6px;
+    }
 
-        .tab.active {
-            background: #1e3a5f;
-            color: white;
-        }
+    .stat-value {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #1e3a5f;
+    }
 
-        .transaction {
-            display: flex;
-            justify-content: space-between;
-            padding: 14px 0;
-            border-bottom: 1px solid #eef1f5;
-        }
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
 
-        .transaction:last-child { border-bottom: none; }
+    .tab {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #dcdfe6;
+      background: #f5f7fa;
+      cursor: pointer;
+      font-weight: 800;
+    }
 
-        .transaction-title { font-weight: 600; }
-        .transaction-meta { font-size: 0.8rem; color: #7a869a; }
+    .tab.active {
+      background: #1e3a5f;
+      color: white;
+      border-color: #1e3a5f;
+    }
 
-        .alert {
-            padding: 14px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            display: none;
-        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
 
-        .alert.show { display: block; }
-        .alert.success { background: #e6f4ea; color: #1e7e34; }
-        .alert.error { background: #fdecea; color: #b02a37; }
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid #eef1f5;
+      font-size: 0.95rem;
+      text-align: left;
+      vertical-align: middle;
+    }
 
-        .hidden { display: none; }
+    th {
+      font-size: 0.8rem;
+      color: #6c757d;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
 
-        @media (max-width: 600px) {
-            .row { grid-template-columns: 1fr; }
-        }
-    </style>
+    .transaction {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid #eef1f5;
+    }
+
+    .transaction:last-child { border-bottom: none; }
+
+    .transaction-title { font-weight: 800; }
+    .transaction-meta { font-size: 0.82rem; color: #7a869a; margin-top: 3px; }
+
+    .alert {
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin: 0 0 12px;
+      display: none;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .alert.show { display: block; }
+    .alert.success { background: #e6f4ea; color: #1e7e34; border: 1px solid #cdebd6; }
+    .alert.error { background: #fdecea; color: #b02a37; border: 1px solid #f6c9c3; }
+    .alert.info { background: #e7f1ff; color: #1e3a5f; border: 1px solid #cfe2ff; }
+
+    .hidden { display: none; }
+
+    .topbar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .user-pill {
+      background: #f5f7fa;
+      border: 1px solid #dcdfe6;
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      color: #1e3a5f;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .subtle {
+      font-size: 0.85rem;
+      color: #6c757d;
+      margin-top: 6px;
+      line-height: 1.35;
+    }
+
+    .hr {
+      height: 1px;
+      background: #eef1f5;
+      border: none;
+      margin: 18px 0;
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      .row { grid-template-columns: 1fr; }
+      .topbar { flex-direction: column; align-items: flex-start; }
+      .user-pill { width: 100%; justify-content: space-between; }
+    }
+  </style>
 </head>
 
 <body>
-
-<div class="container">
+  <div class="container">
 
     <!-- LOGIN -->
     <div id="loginScreen" class="card">
-        <div class="app-title">Clinic Expense Management</div>
-        <div id="loginAlert" class="alert"></div>
+      <div class="app-title">Clinic Expense Management</div>
+      <div id="loginAlert" class="alert"></div>
 
-        <input type="text" id="username" placeholder="Username">
-        <input type="password" id="password" placeholder="Password">
-        <button class="primary-btn" onclick="login()">Login</button>
+      <label>Username</label>
+      <input type="text" id="username" placeholder="e.g. cashier" autocomplete="username">
+
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter password" autocomplete="current-password">
+
+      <button class="primary-btn" onclick="login()">Login</button>
+
+      <div class="subtle">
+        Demo users (change later): <strong>cashier</strong> / clinic123, <strong>admin</strong> / admin123
+      </div>
     </div>
 
-    <!-- MAIN APP (Initially Hidden) -->
+    <!-- MAIN APP -->
     <div id="mainScreen" class="hidden">
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <div class="app-title">Expense Dashboard</div>
-            <div>
-                <span id="userDisplay"></span>
-                <button class="secondary-btn" onclick="logout()">Logout</button>
-            </div>
+      <div class="topbar">
+        <div class="app-title" style="margin:0;">Expense Dashboard</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="user-pill">
+            <span id="userDisplay">—</span>
+          </div>
+          <button class="secondary-btn" onclick="logout()">Logout</button>
         </div>
+      </div>
 
-        <div id="mainAlert" class="alert"></div>
+      <div id="mainAlert" class="alert"></div>
 
-        <!-- Stats -->
-        <div class="card">
-            <div class="row">
-                <div class="stat-box">
-                    <div class="stat-label">Pocket Balance</div>
-                    <div class="stat-value" id="pocketBalance">TZS 0</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Sales Used</div>
-                    <div class="stat-value" id="salesUsed">TZS 0</div>
-                </div>
-            </div>
+      <!-- Stats -->
+      <div class="card">
+        <div class="row">
+          <div class="stat-box">
+            <div class="stat-label">Pocket Balance</div>
+            <div class="stat-value" id="pocketBalance">TZS 0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Sales Used (Today)</div>
+            <div class="stat-value" id="salesUsed">TZS 0</div>
+          </div>
         </div>
+        <div class="subtle" id="statsNote">—</div>
+      </div>
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab active" onclick="showExpense()">Add Expense</button>
-            <button class="tab" onclick="showPocket()">Pocket Money</button>
-        </div>
+      <!-- Tabs -->
+      <div class="tabs">
+        <button id="tabExpense" class="tab active" onclick="showExpense()">Add Expense</button>
+        <button id="tabPocket" class="tab" onclick="showPocket()">Pocket Money</button>
+        <button id="tabReports" class="tab" onclick="showReports()">Monthly Report</button>
+      </div>
 
-        <!-- Expense Form -->
-        <div id="expenseTab" class="card">
-            <h3>Record Expense</h3>
+      <!-- Expense Form -->
+      <div id="expenseTab" class="card">
+        <h3>Record Expense</h3>
 
-            <label style="font-size:0.85rem; color:#555;">Expense Category</label>
-            <select id="expenseCategory">
-                <option value="">-- Select Category --</option>
-            </select>
+        <label>Expense Category</label>
+        <select id="expenseCategory">
+          <option value="">-- Select Category --</option>
+        </select>
 
-            <label style="font-size:0.85rem; color:#555;">Amount (TZS)</label>
-            <input type="number" id="expenseAmount" placeholder="Enter amount">
-
-            <label style="font-size:0.85rem; color:#555;">Additional Comments</label>
-            <input type="text" id="expenseComment" placeholder="Optional notes">
-
+        <div class="row">
+          <div>
+            <label>Amount (TZS)</label>
+            <input type="number" id="expenseAmount" placeholder="Enter amount" min="1" inputmode="numeric">
+          </div>
+          <div>
+            <label>Payment Source</label>
             <select id="expenseSource">
-                <option value="POCKET">From Pocket</option>
-                <option value="SALES">From Sales</option>
+              <option value="POCKET">From Pocket</option>
+              <option value="SALES">From Sales</option>
             </select>
-
-            <button class="secondary-btn" onclick="addToList()">Add to List</button>
-
-            <hr style="margin:20px 0;">
-
-            <h4>Pending Expenses</h4>
-
-            <table width="100%" style="margin-bottom:15px;">
-                <thead>
-                    <tr style="text-align:left; font-size:0.85rem;">
-                        <th>Category</th>
-                        <th>Amount</th>
-                        <th>Source</th>
-                        <th>Remove</th>
-                    </tr>
-                </thead>
-                <tbody id="expenseList"></tbody>
-            </table>
-
-            <button class="primary-btn" onclick="submitAll()">Submit All</button>
+          </div>
         </div>
 
-        <!-- Pocket Form -->
-        <div id="pocketTab" class="card hidden">
-            <h3>Add Pocket Money</h3>
-            <input type="number" id="pocketAmount" placeholder="Amount">
-            <button class="primary-btn" onclick="addPocketMoney()">Add Money</button>
+        <label>Additional Comments (Optional)</label>
+        <input type="text" id="expenseComment" placeholder="e.g. bought gloves and syringes">
+
+        <button class="secondary-btn" onclick="addToList()">Add to List</button>
+
+        <hr class="hr">
+
+        <h3 style="margin-bottom:8px;">Pending Expenses</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Source</th>
+              <th>Remove</th>
+            </tr>
+          </thead>
+          <tbody id="expenseList"></tbody>
+        </table>
+
+        <div class="subtle" id="pendingHint">No pending items.</div>
+
+        <hr class="hr">
+
+        <button class="primary-btn" onclick="submitAll()">Submit All</button>
+      </div>
+
+      <!-- Pocket Form -->
+      <div id="pocketTab" class="card hidden">
+        <h3>Pocket Money</h3>
+
+        <label>Type</label>
+        <select id="pocketType">
+          <option value="OPENING">Opening Balance (Once per day)</option>
+          <option value="TOPUP" selected>Top-up</option>
+        </select>
+
+        <label>Amount (TZS)</label>
+        <input type="number" id="pocketAmount" placeholder="Amount" min="1" inputmode="numeric">
+
+        <button class="primary-btn" onclick="addPocketMoney()">Save</button>
+
+        <div class="subtle">
+          Note: If opening is already set today, the system will block another OPENING and ask you to use TOPUP.
+        </div>
+      </div>
+
+      <!-- Monthly Report -->
+      <div id="reportsTab" class="card hidden">
+        <h3>Monthly Report</h3>
+
+        <label>Select Month</label>
+        <div class="row">
+          <input type="month" id="reportMonth">
+          <button class="secondary-btn" onclick="loadMonthlyReport()">Load Report</button>
         </div>
 
-        <!-- Transactions -->
-        <div class="card">
-            <h3>Today's Transactions</h3>
-            <div id="transactions">No transactions yet</div>
+        <div id="reportAlert" class="alert"></div>
+
+        <hr class="hr">
+
+        <div class="row">
+          <div class="stat-box">
+            <div class="stat-label">Pocket Added</div>
+            <div class="stat-value" id="mPocketAdded">TZS 0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Pocket Spent</div>
+            <div class="stat-value" id="mPocketSpent">TZS 0</div>
+          </div>
         </div>
+
+        <div class="row" style="margin-top:14px;">
+          <div class="stat-box">
+            <div class="stat-label">Sales Used</div>
+            <div class="stat-value" id="mSalesUsed">TZS 0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Pocket Balance</div>
+            <div class="stat-value" id="mPocketBalance">TZS 0</div>
+          </div>
+        </div>
+
+        <hr class="hr">
+
+        <h3 style="margin-bottom:8px;">Expenses by Category</h3>
+        <div id="byCategory">No data</div>
+
+        <hr class="hr">
+
+        <h3 style="margin-bottom:8px;">Daily Summary</h3>
+        <div id="byDay">No data</div>
+
+        <hr class="hr">
+
+        <h3 style="margin-bottom:8px;">Transactions (Month)</h3>
+        <div id="monthTransactions">No data</div>
+      </div>
+
+      <!-- Today's Transactions -->
+      <div class="card">
+        <h3>Today's Transactions</h3>
+        <div id="transactions">No transactions yet</div>
+      </div>
 
     </div>
-</div>
+  </div>
 
-<script>
+  <script>
+    // ============================
+    // CONFIG
+    // ============================
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF9cqcuA6G_mHh4yVisv2-5eNyx2GwhNaLqEk444yizaCdWPsfdtQ4LEO6a40BelVH/exec';
 
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF9cqcuA6G_mHh4yVisv2-5eNyx2GwhNaLqEk444yizaCdWPsfdtQ4LEO6a40BelVH/exec';
+    // Demo users only (replace with proper auth later)
+    const USERS = {
+      cashier: { password: 'clinic123', role: 'Cashier' },
+      admin: { password: 'admin123', role: 'Admin' }
+    };
 
-const USERS = {
-    cashier: { password: 'clinic123', role: 'Cashier' },
-    admin: { password: 'admin123', role: 'Admin' }
-};
+    let currentUser = null;
+    let pendingExpenses = [];
 
-let currentUser = null;
-let pendingExpenses = [];
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('mainScreen').classList.add('hidden');
 
-// Make sure login screen is visible when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    console.log("Page loaded - login screen should be visible");
-    // Ensure login screen is visible and main screen is hidden
-    document.getElementById('loginScreen').classList.remove('hidden');
-    document.getElementById('mainScreen').classList.add('hidden');
-});
+      // Default month picker to current month
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      document.getElementById('reportMonth').value = `${yyyy}-${mm}`;
 
-function login() {
-    console.log("Login function called");
-    const u = document.getElementById('username').value;
-    const p = document.getElementById('password').value;
-    const user = USERS[u];
+      // Enter-to-login
+      document.getElementById('password').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') login();
+      });
+    });
 
-    if (user && user.password === p) {
-        console.log("Login successful");
-        currentUser = { username: u, name: u };
-        document.getElementById('loginScreen').classList.add("hidden");
-        document.getElementById('mainScreen').classList.remove("hidden");
-        document.getElementById('userDisplay').textContent = u + " (" + user.role + ")";
-        loadToday();
+    // ============================
+    // AUTH
+    // ============================
+    function login() {
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value;
+
+      const user = USERS[u];
+      if (user && user.password === p) {
+        currentUser = { username: u, name: u, role: user.role };
+
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('mainScreen').classList.remove('hidden');
+        document.getElementById('userDisplay').textContent = `${u} (${user.role})`;
+
+        clearAlert('loginAlert');
+        showExpense();
         loadCategories();
-    } else {
-        console.log("Login failed");
-        const loginAlert = document.getElementById('loginAlert');
-        loginAlert.textContent = "Invalid username or password";
-        loginAlert.className = "alert show error";
+        loadToday();
+      } else {
+        showInlineAlert('loginAlert', 'Invalid username or password', 'error');
+      }
     }
-}
 
-function logout() {
-    location.reload();
-}
+    function logout() {
+      location.reload();
+    }
 
-function showExpense() {
-    document.getElementById('expenseTab').classList.remove("hidden");
-    document.getElementById('pocketTab').classList.add("hidden");
-    document.querySelectorAll(".tab")[0].classList.add("active");
-    document.querySelectorAll(".tab")[1].classList.remove("active");
-}
+    // ============================
+    // TABS
+    // ============================
+    function setActiveTab(tabId) {
+      const tabs = [
+        { btn: 'tabExpense', panel: 'expenseTab' },
+        { btn: 'tabPocket', panel: 'pocketTab' },
+        { btn: 'tabReports', panel: 'reportsTab' }
+      ];
 
-function showPocket() {
-    document.getElementById('expenseTab').classList.add("hidden");
-    document.getElementById('pocketTab').classList.remove("hidden");
-    document.querySelectorAll(".tab")[1].classList.add("active");
-    document.querySelectorAll(".tab")[0].classList.remove("active");
-}
+      tabs.forEach(t => {
+        document.getElementById(t.panel).classList.toggle('hidden', t.panel !== tabId);
+        document.getElementById(t.btn).classList.toggle('active', t.panel === tabId);
+      });
+    }
 
-function addToList(){
-    const category = document.getElementById('expenseCategory').value;
-    const amount = document.getElementById('expenseAmount').value;
-    const source = document.getElementById('expenseSource').value;
-    const comment = document.getElementById('expenseComment').value;
+    function showExpense() { setActiveTab('expenseTab'); }
+    function showPocket() { setActiveTab('pocketTab'); }
+    function showReports() { setActiveTab('reportsTab'); }
 
-    if(!category || !amount){
-        showAlert("Select category and enter amount","error");
+    // ============================
+    // PENDING EXPENSES
+    // ============================
+    function addToList() {
+      const category = document.getElementById('expenseCategory').value;
+      const amount = Number(document.getElementById('expenseAmount').value);
+      const source = document.getElementById('expenseSource').value;
+      const comment = document.getElementById('expenseComment').value.trim();
+
+      if (!category || !amount || amount <= 0) {
+        showAlert("Select category and enter a valid amount", "error");
         return;
-    }
+      }
 
-    const expense = {
+      pendingExpenses.push({
         category,
         amount,
         source,
         description: comment || category
-    };
+      });
 
-    pendingExpenses.push(expense);
+      renderExpenseList();
 
-    renderExpenseList();
+      document.getElementById('expenseCategory').value = "";
+      document.getElementById('expenseAmount').value = "";
+      document.getElementById('expenseComment').value = "";
+    }
 
-    document.getElementById('expenseCategory').value="";
-    document.getElementById('expenseAmount').value="";
-    document.getElementById('expenseComment').value="";
-}
+    function renderExpenseList() {
+      const tbody = document.getElementById('expenseList');
+      const hint = document.getElementById('pendingHint');
 
-function renderExpenseList(){
-    let html = "";
-    const expenseList = document.getElementById('expenseList');
-
-    pendingExpenses.forEach((e,index)=>{
-        html += `
-            <tr>
-                <td>${e.category}</td>
-                <td>${e.amount}</td>
-                <td>${e.source}</td>
-                <td><button onclick="removeExpense(${index})" style="background:#fdecea; color:#b02a37; padding:5px 10px; border-radius:4px;">X</button></td>
-            </tr>
-        `;
-    });
-
-    expenseList.innerHTML = html;
-}
-
-function removeExpense(index){
-    pendingExpenses.splice(index,1);
-    renderExpenseList();
-}
-
-async function addPocketMoney(){
-    const amount = document.getElementById('pocketAmount').value;
-
-    if(!amount){
-        showAlert("Enter amount","error");
+      if (pendingExpenses.length === 0) {
+        tbody.innerHTML = "";
+        hint.textContent = "No pending items.";
         return;
+      }
+
+      hint.textContent = "";
+
+      tbody.innerHTML = pendingExpenses.map((e, index) => `
+        <tr>
+          <td>${escapeHtml(e.category)}</td>
+          <td>TZS ${formatNumber(e.amount)}</td>
+          <td>${escapeHtml(e.source)}</td>
+          <td><button class="danger-btn" onclick="removeExpense(${index})">X</button></td>
+        </tr>
+      `).join('');
     }
 
-    const formData = new URLSearchParams();
-    formData.append("action","add");
-    formData.append("type","OPENING");
-    formData.append("amount",amount);
-    formData.append("cashier",currentUser.name);
+    function removeExpense(index) {
+      pendingExpenses.splice(index, 1);
+      renderExpenseList();
+    }
 
-    try{
-        const res = await fetch(SCRIPT_URL,{
-            method:"POST",
-            body:formData
-        });
+    // ============================
+    // API: POCKET MONEY (OPENING / TOPUP) with daily lock enforced by server
+    // ============================
+    async function addPocketMoney() {
+      const type = document.getElementById('pocketType').value; // OPENING or TOPUP
+      const amount = Number(document.getElementById('pocketAmount').value);
 
+      if (!amount || amount <= 0) {
+        showAlert("Enter a valid amount", "error");
+        return;
+      }
+
+      const formData = new URLSearchParams();
+      formData.append("action", "add");
+      formData.append("type", type);
+      formData.append("category", "Pocket Money");
+      formData.append("amount", String(amount));
+      formData.append("description", type === "OPENING" ? "Opening balance" : "Pocket top-up");
+      formData.append("source", "POCKET");
+      formData.append("cashier", currentUser.name);
+
+      try {
+        const res = await fetch(SCRIPT_URL, { method: "POST", body: formData });
         const result = await res.json();
-        console.log("Add pocket response:", result);
 
-        if(result.success){
-            showAlert("Money Added","success");
-            document.getElementById('pocketAmount').value="";
-            loadToday();
+        if (result.success) {
+          showAlert(type === "OPENING" ? "Opening saved" : "Top-up saved", "success");
+          document.getElementById('pocketAmount').value = "";
+          loadToday();
         } else {
-            showAlert("Error saving: " + (result.error || "Unknown error"),"error");
+          showAlert(result.error || "Error saving pocket money", "error");
+          // If opening blocked, auto-switch to TOPUP to help user
+          if ((result.error || "").toLowerCase().includes("opening")) {
+            document.getElementById('pocketType').value = "TOPUP";
+          }
         }
-
-    } catch(err){
-        console.error("Network error:", err);
-        showAlert("Network error - check console","error");
+      } catch (err) {
+        showAlert("Network error", "error");
+      }
     }
-}
 
-async function loadToday(){
-    try{
-        console.log("Loading today's data...");
-        
-        const res = await fetch(SCRIPT_URL,{
-            method:"POST",
-            body:new URLSearchParams({action:"today"})
-        });
+    // ============================
+    // API: SUBMIT EXPENSES (BULK)
+    // ============================
+    async function submitAll() {
+      if (pendingExpenses.length === 0) {
+        showAlert("No expenses to submit", "error");
+        return;
+      }
 
-        console.log("Response status:", res.status);
-        
+      const formData = new URLSearchParams();
+      formData.append("action", "bulkAdd");
+      formData.append("expenses", JSON.stringify(pendingExpenses));
+      formData.append("cashier", currentUser.name);
+
+      try {
+        const res = await fetch(SCRIPT_URL, { method: "POST", body: formData });
         const result = await res.json();
-        console.log("Today's data response:", result);
 
-        if(result.success){
-            // Update stats
-            document.getElementById('pocketBalance').textContent = "TZS " + formatNumber(result.summary?.pocketBalance || 0);
-            document.getElementById('salesUsed').textContent = "TZS " + formatNumber(result.summary?.salesUsed || 0);
-
-            // Update transactions
-            let html = "";
-            const transactions = document.getElementById('transactions');
-
-            if(result.transactions && result.transactions.length > 0) {
-                result.transactions.forEach(t=>{
-                    html += `
-                        <div class="transaction">
-                            <div>
-                                <div class="transaction-title">${t.desc || t.type || 'Expense'}</div>
-                                <div class="transaction-meta">${t.time || 'Just now'} · ${t.cashier || currentUser?.name || 'Unknown'}</div>
-                            </div>
-                            <div><strong>TZS ${formatNumber(t.amount)}</strong></div>
-                        </div>
-                    `;
-                });
-            } else {
-                // Show sample data if no transactions
-                html = getSampleTransactions();
-            }
-
-            transactions.innerHTML = html;
+        if (result.success) {
+          showAlert(`Submitted ${result.count || pendingExpenses.length} expense(s)`, "success");
+          pendingExpenses = [];
+          renderExpenseList();
+          loadToday();
         } else {
-            console.error("Error in response:", result.error);
-            // Show sample data on error
-            document.getElementById('transactions').innerHTML = getSampleTransactions();
+          showAlert(result.error || "Error submitting expenses", "error");
         }
-
-    } catch(err){
-        console.error("Error loading today's data:", err);
-        // Show sample data on error
-        document.getElementById('transactions').innerHTML = getSampleTransactions();
+      } catch (err) {
+        showAlert("Network error", "error");
+      }
     }
-}
 
-// Helper function to format numbers
-function formatNumber(num) {
-    return Number(num).toLocaleString('en-US');
-}
-
-// Sample data for testing/fallback
-function getSampleTransactions() {
-    return `
-        <div class="transaction">
-            <div>
-                <div class="transaction-title">Opening Balance</div>
-                <div class="transaction-meta">Today 08:00 · cashier</div>
-            </div>
-            <div><strong>TZS 50,000</strong></div>
-        </div>
-        <div class="transaction">
-            <div>
-                <div class="transaction-title">Medical Supplies - From Pocket</div>
-                <div class="transaction-meta">Today 09:30 · cashier</div>
-            </div>
-            <div><strong>TZS 15,000</strong></div>
-        </div>
-        <div class="transaction">
-            <div>
-                <div class="transaction-title">Office Supplies - From Sales</div>
-                <div class="transaction-meta">Today 11:15 · cashier</div>
-            </div>
-            <div><strong>TZS 8,500</strong></div>
-        </div>
-        <div class="transaction">
-            <div>
-                <div class="transaction-title">Staff Lunch - From Pocket</div>
-                <div class="transaction-meta">Today 13:00 · cashier</div>
-            </div>
-            <div><strong>TZS 12,000</strong></div>
-        </div>
-    `;
-}
-
-function showAlert(msg,type){
-    const mainAlert = document.getElementById('mainAlert');
-    mainAlert.textContent = msg;
-    mainAlert.className = "alert show " + type;
-    setTimeout(()=>mainAlert.classList.remove("show"),3000);
-}
-
-async function loadCategories() {
-    try {
-        console.log("Loading categories...");
-        
+    // ============================
+    // API: LOAD TODAY
+    // ============================
+    async function loadToday() {
+      try {
         const res = await fetch(SCRIPT_URL, {
-            method: "POST",
-            body: new URLSearchParams({ action: "categories" })
+          method: "POST",
+          body: new URLSearchParams({ action: "today" })
         });
 
         const result = await res.json();
-        console.log("Categories response:", result);
 
-        if(result.success && result.categories){
-            const select = document.getElementById("expenseCategory");
+        if (result.success) {
+          const s = result.summary || {};
+          document.getElementById('pocketBalance').textContent = "TZS " + formatNumber(s.pocketBalance || 0);
+          document.getElementById('salesUsed').textContent = "TZS " + formatNumber(s.salesUsed || 0);
 
-            select.innerHTML = '<option value="">-- Select Category --</option>';
+          document.getElementById('statsNote').textContent =
+            `Pocket added today: TZS ${formatNumber(s.pocketAdded || 0)} · Pocket spent today: TZS ${formatNumber(s.pocketSpent || 0)}`;
 
-            result.categories.forEach(cat => {
-                const option = document.createElement("option");
-                option.value = cat;
-                option.textContent = cat;
-                select.appendChild(option);
-            });
+          renderTransactions(result.transactions || []);
         } else {
-            // Fallback categories if API fails
-            useFallbackCategories();
+          document.getElementById('transactions').innerHTML = `<div class="subtle">${escapeHtml(result.error || "Unable to load")}</div>`;
         }
-
-    } catch(err){
-        console.log("Error loading categories, using fallback:", err);
-        useFallbackCategories();
+      } catch (err) {
+        document.getElementById('transactions').innerHTML = `<div class="subtle">Network error</div>`;
+      }
     }
-}
 
-function useFallbackCategories() {
-    const select = document.getElementById("expenseCategory");
-    select.innerHTML = '<option value="">-- Select Category --</option>';
-    const fallbackCats = ['Medical Supplies', 'Office Supplies', 'Staff Expenses', 'Utilities', 'Maintenance', 'Other'];
-    fallbackCats.forEach(cat => {
-        const option = document.createElement("option");
-        option.value = cat;
-        option.textContent = cat;
-        select.appendChild(option);
-    });
-}
+    function renderTransactions(items) {
+      const el = document.getElementById('transactions');
 
-async function submitAll(){
-    if(pendingExpenses.length === 0){
-        showAlert("No expenses to submit","error");
+      if (!items || items.length === 0) {
+        el.innerHTML = `<div class="subtle">No transactions yet.</div>`;
         return;
+      }
+
+      // Most recent first
+      const sorted = [...items].sort((a, b) => (a.time < b.time ? 1 : -1));
+
+      el.innerHTML = sorted.map(t => {
+        const title = (t.type === "EXPENSE")
+          ? `${t.category || 'Expense'} — ${t.source === 'SALES' ? 'From Sales' : 'From Pocket'}`
+          : (t.type === "OPENING" ? "Opening Balance" : "Pocket Top-up");
+
+        const meta = `${t.time || ''} · ${t.cashier || ''}`;
+        return `
+          <div class="transaction">
+            <div>
+              <div class="transaction-title">${escapeHtml(title)}</div>
+              <div class="transaction-meta">${escapeHtml(meta)}</div>
+            </div>
+            <div><strong>TZS ${formatNumber(t.amount || 0)}</strong></div>
+          </div>
+        `;
+      }).join('');
     }
 
-    const formData = new URLSearchParams();
-    formData.append("action","bulkAdd");
-    formData.append("type","EXPENSE");
-    formData.append("expenses", JSON.stringify(pendingExpenses));
-    formData.append("cashier", currentUser.name);
-
-    try{
-        console.log("Submitting expenses:", pendingExpenses);
-        
-        const res = await fetch(SCRIPT_URL,{
-            method:"POST",
-            body:formData
+    // ============================
+    // API: CATEGORIES
+    // ============================
+    async function loadCategories() {
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: new URLSearchParams({ action: "categories" })
         });
 
         const result = await res.json();
-        console.log("Submit response:", result);
 
-        if(result.success){
-            showAlert("Expenses submitted successfully","success");
-            pendingExpenses = [];
-            renderExpenseList();
-            loadToday();
+        const select = document.getElementById("expenseCategory");
+        select.innerHTML = '<option value="">-- Select Category --</option>';
+
+        if (result.success && Array.isArray(result.categories)) {
+          result.categories.forEach(cat => {
+            const option = document.createElement("option");
+            option.value = cat;
+            option.textContent = cat;
+            select.appendChild(option);
+          });
         } else {
-            showAlert("Error submitting: " + (result.error || "Unknown error"),"error");
+          useFallbackCategories();
+        }
+      } catch (err) {
+        useFallbackCategories();
+      }
+    }
+
+    function useFallbackCategories() {
+      const select = document.getElementById("expenseCategory");
+      select.innerHTML = '<option value="">-- Select Category --</option>';
+      ['Medical Supplies', 'Office Supplies', 'Staff Welfare', 'Utilities', 'Maintenance', 'Transport', 'Other']
+        .forEach(cat => {
+          const option = document.createElement("option");
+          option.value = cat;
+          option.textContent = cat;
+          select.appendChild(option);
+        });
+    }
+
+    // ============================
+    // MONTHLY REPORT
+    // ============================
+    async function loadMonthlyReport() {
+      const month = document.getElementById('reportMonth').value; // YYYY-MM
+      if (!month) {
+        showInlineAlert('reportAlert', 'Select a month', 'error');
+        return;
+      }
+
+      showInlineAlert('reportAlert', 'Loading report...', 'info');
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body: new URLSearchParams({ action: "month", month })
+        });
+
+        const result = await res.json();
+
+        if (!result.success) {
+          showInlineAlert('reportAlert', result.error || 'Failed to load report', 'error');
+          return;
         }
 
-    } catch(err){
-        console.error("Network error:", err);
-        showAlert("Network error - check console","error");
+        clearAlert('reportAlert');
+
+        const s = result.summary || {};
+        document.getElementById('mPocketAdded').textContent = "TZS " + formatNumber(s.pocketAdded || 0);
+        document.getElementById('mPocketSpent').textContent = "TZS " + formatNumber(s.pocketSpent || 0);
+        document.getElementById('mSalesUsed').textContent = "TZS " + formatNumber(s.salesUsed || 0);
+        document.getElementById('mPocketBalance').textContent = "TZS " + formatNumber(s.pocketBalance || 0);
+
+        renderByCategory(result.byCategory || []);
+        renderByDay(result.byDay || []);
+        renderMonthTransactions(result.transactions || []);
+
+      } catch (err) {
+        showInlineAlert('reportAlert', 'Network error', 'error');
+      }
     }
-}
 
-</script>
+    function renderByCategory(items) {
+      const el = document.getElementById('byCategory');
+      if (!items || items.length === 0) {
+        el.innerHTML = `<div class="subtle">No expense data for this month.</div>`;
+        return;
+      }
 
+      el.innerHTML = `
+        <table>
+          <thead>
+            <tr><th>Category</th><th>Total</th></tr>
+          </thead>
+          <tbody>
+            ${items.map(x => `
+              <tr>
+                <td>${escapeHtml(x.category || 'Uncategorized')}</td>
+                <td><strong>TZS ${formatNumber(x.total || 0)}</strong></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderByDay(items) {
+      const el = document.getElementById('byDay');
+      if (!items || items.length === 0) {
+        el.innerHTML = `<div class="subtle">No daily data for this month.</div>`;
+        return;
+      }
+
+      el.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Pocket Added</th>
+              <th>Pocket Spent</th>
+              <th>Sales Used</th>
+              <th>Pocket Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${items.map(d => `
+              <tr>
+                <td>${escapeHtml(d.date)}</td>
+                <td>TZS ${formatNumber(d.pocketAdded || 0)}</td>
+                <td>TZS ${formatNumber(d.pocketSpent || 0)}</td>
+                <td>TZS ${formatNumber(d.salesUsed || 0)}</td>
+                <td><strong>TZS ${formatNumber(d.pocketBalance || 0)}</strong></td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderMonthTransactions(items) {
+      const el = document.getElementById('monthTransactions');
+      if (!items || items.length === 0) {
+        el.innerHTML = `<div class="subtle">No transactions for this month.</div>`;
+        return;
+      }
+
+      // Newest first
+      const sorted = [...items].sort((a, b) => {
+        if (a.date === b.date) return (a.time < b.time ? 1 : -1);
+        return a.date < b.date ? 1 : -1;
+      });
+
+      el.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Type</th>
+              <th>Category</th>
+              <th>Source</th>
+              <th>Amount</th>
+              <th>Cashier</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sorted.map(t => `
+              <tr>
+                <td>${escapeHtml(t.date || '')}</td>
+                <td>${escapeHtml(t.time || '')}</td>
+                <td>${escapeHtml(t.type || '')}</td>
+                <td>${escapeHtml(t.category || '')}</td>
+                <td>${escapeHtml(t.source || '')}</td>
+                <td><strong>TZS ${formatNumber(t.amount || 0)}</strong></td>
+                <td>${escapeHtml(t.cashier || '')}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // ============================
+    // UI HELPERS
+    // ============================
+    function showAlert(msg, type) {
+      const el = document.getElementById('mainAlert');
+      el.textContent = msg;
+      el.className = `alert show ${type}`;
+      setTimeout(() => el.classList.remove("show"), 3500);
+    }
+
+    function showInlineAlert(elId, msg, type) {
+      const el = document.getElementById(elId);
+      el.textContent = msg;
+      el.className = `alert show ${type}`;
+    }
+
+    function clearAlert(elId) {
+      const el = document.getElementById(elId);
+      el.textContent = "";
+      el.className = "alert";
+    }
+
+    function formatNumber(num) {
+      return Number(num || 0).toLocaleString('en-US');
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+  </script>
 </body>
 </html>
