@@ -443,7 +443,7 @@
     </div>
   </div>
 
-  <script>
+ <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF9cqcuA6G_mHh4yVisv2-5eNyx2GwhNaLqEk444yizaCdWPsfdtQ4LEO6a40BelVH/exec';
 
     // Replace with real auth later if needed
@@ -572,7 +572,6 @@
       const el = document.getElementById('submitMessage');
       el.textContent = text;
       el.classList.add('show');
-      // Hide after 6 seconds (optional). Remove if you want it to stay.
       setTimeout(() => el.classList.remove('show'), 6000);
     }
 
@@ -669,10 +668,19 @@
 
           renderTransactions(result.transactions || []);
         } else {
-          document.getElementById('transactions').innerHTML = `<div class="subtle">${escapeHtml(result.error || "Unable to load")}</div>`;
+          // Show empty state instead of sample data
+          document.getElementById('pocketBalance').textContent = "TZS 0";
+          document.getElementById('salesUsed').textContent = "TZS 0";
+          document.getElementById('statsNote').textContent = "No data available";
+          document.getElementById('transactions').innerHTML = `<div class="subtle">No transactions yet.</div>`;
         }
       } catch (err) {
-        document.getElementById('transactions').innerHTML = `<div class="subtle">Network error</div>`;
+        console.error("Error loading today's data:", err);
+        // Show error state
+        document.getElementById('pocketBalance').textContent = "TZS 0";
+        document.getElementById('salesUsed').textContent = "TZS 0";
+        document.getElementById('statsNote').textContent = "Error loading data";
+        document.getElementById('transactions').innerHTML = `<div class="subtle error">Failed to load transactions. Please try again.</div>`;
       }
     }
 
@@ -687,11 +695,18 @@
       const sorted = [...items].sort((a, b) => (a.time < b.time ? 1 : -1));
 
       el.innerHTML = sorted.map(t => {
-        const title = (t.type === "EXPENSE")
-          ? `${t.category || 'Expense'} — ${t.source === 'SALES' ? 'From Sales' : 'From Pocket'}`
-          : (t.type === "OPENING" ? "Opening Balance" : "Pocket Top-up");
+        let title = "";
+        if (t.type === "EXPENSE") {
+          title = `${t.category || t.desc || 'Expense'} — ${t.source === 'SALES' ? 'From Sales' : 'From Pocket'}`;
+        } else if (t.type === "OPENING") {
+          title = "Opening Balance";
+        } else if (t.type === "TOPUP") {
+          title = "Pocket Top-up";
+        } else {
+          title = t.desc || t.type || "Transaction";
+        }
 
-        const meta = `${t.time || ''} · ${t.cashier || ''}`;
+        const meta = `${t.time || ''} · ${t.cashier || 'Unknown'}`;
         return `
           <div class="transaction">
             <div>
