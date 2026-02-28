@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Clinic Expense Management</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -100,6 +101,17 @@
       border-radius: 8px;
       font-weight: 800;
     }
+
+    .quick-action-btn {
+      background: #e9edf3;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quick-action-btn:hover { background: #d0d9e8; }
 
     .row {
       display: grid;
@@ -248,71 +260,7 @@
     }
     .inline-msg.show { display: block; }
 
-    /* Loading spinner */
-    .spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid rgba(0,0,0,.1);
-      border-radius: 50%;
-      border-top-color: #1e3a5f;
-      animation: spin 0.6s linear infinite;
-    }
-    
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(255,255,255,0.8);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-    
-    .loading-overlay.show {
-      display: flex;
-    }
-    
-    .loading-content {
-      background: white;
-      padding: 20px 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-    
-    /* Quick action buttons */
-    .quick-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin: 10px 0;
-    }
-    
-    .quick-action-btn {
-      background: #e9edf3;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    
-    .quick-action-btn:hover {
-      background: #d0d9e8;
-    }
-    
-    /* Offline indicator */
+    /* Offline indicator (missing in your pasted CSS) */
     .offline-indicator {
       background: #ff9800;
       color: white;
@@ -321,33 +269,37 @@
       font-size: 0.8rem;
       display: none;
     }
-    
-    .offline-indicator.show {
+    .offline-indicator.show { display: inline-block; }
+
+    /* Simplified loading indicator - small spinner */
+    .mini-spinner {
       display: inline-block;
-    }
-    
-    /* Search box */
-    .search-box {
-      margin-bottom: 15px;
-    }
-    
-    .search-box input {
-      padding: 8px 12px;
-      border-radius: 20px;
-      border: 1px solid #dcdfe6;
-      width: 100%;
-    }
-    
-    /* Cache indicator */
-    .cache-indicator {
-      font-size: 0.7rem;
-      color: #6c757d;
-      margin-left: 10px;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(30,58,95,0.2);
+      border-radius: 50%;
+      border-top-color: #1e3a5f;
+      animation: spin 0.6s linear infinite;
+      margin-left: 8px;
+      vertical-align: middle;
     }
 
-    select[multiple], select[size] {
-      height: auto;
-      min-height: 120px;
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Skeleton loading */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 4px;
+      height: 20px;
+      margin: 10px 0;
+      display: inline-block;
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
 
     @media (max-width: 640px) {
@@ -360,14 +312,6 @@
 </head>
 
 <body>
-  <!-- Loading overlay -->
-  <div id="loadingOverlay" class="loading-overlay">
-    <div class="loading-content">
-      <div class="spinner"></div>
-      <span id="loadingMessage">Loading...</span>
-    </div>
-  </div>
-
   <div class="container">
     <!-- LOGIN -->
     <div id="loginScreen" class="card">
@@ -375,12 +319,13 @@
       <div id="loginAlert" class="alert"></div>
 
       <label>Username</label>
-      <input type="text" id="username" placeholder="Username" autocomplete="username">
+      <input type="text" id="username" placeholder="Username" autocomplete="username" />
 
       <label>Password</label>
-      <input type="password" id="password" placeholder="Password" autocomplete="current-password">
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password" />
 
-      <button class="primary-btn" onclick="login()">Login</button>
+      <!-- rewrite: no inline onclick -->
+      <button class="primary-btn" id="loginBtn">Login</button>
     </div>
 
     <!-- MAIN APP -->
@@ -389,14 +334,10 @@
       <div class="topbar">
         <div class="app-title" style="margin:0;">Expense Dashboard</div>
         <div style="display:flex; gap:10px; align-items:center;">
-          <!-- Offline indicator -->
-          <div id="offlineIndicator" class="offline-indicator">
-            ⚠ Offline Mode
-          </div>
-          <div class="user-pill">
-            <span id="userDisplay">—</span>
-          </div>
-          <button class="secondary-btn" onclick="logout()">Logout</button>
+          <div id="offlineIndicator" class="offline-indicator">⚠ Offline</div>
+          <div class="user-pill"><span id="userDisplay">—</span></div>
+          <!-- rewrite: no inline onclick -->
+          <button class="secondary-btn" id="logoutBtn">Logout</button>
         </div>
       </div>
 
@@ -406,7 +347,8 @@
       <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
           <h3 style="margin:0;">Today's Summary</h3>
-          <button class="quick-action-btn" onclick="refreshData()">
+          <!-- rewrite: no inline onclick -->
+          <button class="quick-action-btn" id="refreshBtn">
             🔄 Refresh
             <span id="refreshCacheIndicator" class="cache-indicator"></span>
           </button>
@@ -414,50 +356,45 @@
         <div class="row">
           <div class="stat-box">
             <div class="stat-label">Pocket Balance</div>
-            <div class="stat-value" id="pocketBalance">TZS 0</div>
+            <div class="stat-value" id="pocketBalance">TZS <span class="skeleton" style="width:60px;"></span></div>
           </div>
           <div class="stat-box">
             <div class="stat-label">Sales Used (Today)</div>
-            <div class="stat-value" id="salesUsed">TZS 0</div>
+            <div class="stat-value" id="salesUsed">TZS <span class="skeleton" style="width:60px;"></span></div>
           </div>
         </div>
-        <div class="subtle" id="statsNote">—</div>
+        <div class="subtle" id="statsNote"><span class="skeleton" style="width:200px;"></span></div>
       </div>
 
       <!-- Quick Actions -->
       <div class="quick-actions">
-        <button class="quick-action-btn" onclick="quickAmount(5000)">+ TZS 5,000</button>
-        <button class="quick-action-btn" onclick="quickAmount(10000)">+ TZS 10,000</button>
-        <button class="quick-action-btn" onclick="quickAmount(20000)">+ TZS 20,000</button>
-        <button class="quick-action-btn" onclick="quickAmount(50000)">+ TZS 50,000</button>
-        <button class="quick-action-btn" onclick="clearAmount()">Clear</button>
+        <button class="quick-action-btn" data-quick="5000">+ TZS 5,000</button>
+        <button class="quick-action-btn" data-quick="10000">+ TZS 10,000</button>
+        <button class="quick-action-btn" data-quick="20000">+ TZS 20,000</button>
+        <button class="quick-action-btn" data-quick="50000">+ TZS 50,000</button>
+        <button class="quick-action-btn" id="clearAmountBtn">Clear</button>
       </div>
 
       <!-- Tabs -->
       <div class="tabs">
-        <button id="tabExpense" class="tab active" onclick="showExpense()">Add Expense</button>
-        <button id="tabPocket" class="tab" onclick="showPocket()">Pocket Money</button>
-        <button id="tabReports" class="tab" onclick="showReports()">Monthly Report</button>
+        <button id="tabExpense" class="tab active">Add Expense</button>
+        <button id="tabPocket" class="tab">Pocket Money</button>
+        <button id="tabReports" class="tab">Monthly Report</button>
       </div>
 
       <!-- Expense Form -->
       <div id="expenseTab" class="card">
         <h3>Record Expense</h3>
 
-        <!-- Category search -->
-        <div class="search-box">
-          <input type="text" id="categorySearch" placeholder="🔍 Search categories..." onkeyup="filterCategories()">
-        </div>
-
         <label>Expense Category</label>
-        <select id="expenseCategory" size="5">
+        <select id="expenseCategory">
           <option value="">-- Select Category --</option>
         </select>
 
         <div class="row">
           <div>
             <label>Amount (TZS)</label>
-            <input type="number" id="expenseAmount" placeholder="Enter amount" min="1" inputmode="numeric">
+            <input type="number" id="expenseAmount" placeholder="Enter amount" min="1" inputmode="numeric" />
           </div>
           <div>
             <label>Payment Source</label>
@@ -469,11 +406,11 @@
         </div>
 
         <label>Additional Comments (Optional)</label>
-        <input type="text" id="expenseComment" placeholder="Optional notes">
+        <input type="text" id="expenseComment" placeholder="Optional notes" />
 
-        <button class="secondary-btn" onclick="addToList()">Add to List</button>
+        <button class="secondary-btn" id="addToListBtn">Add to List</button>
 
-        <hr class="hr">
+        <hr class="hr" />
 
         <h3 style="margin-bottom:8px;">Pending Expenses</h3>
 
@@ -490,13 +427,13 @@
         </table>
 
         <div class="subtle" id="pendingHint">No pending items.</div>
+        <div class="subtle" id="pendingTotal" style="display:none; font-weight:800;"></div>
 
-        <!-- Inline submission message -->
         <div id="submitMessage" class="inline-msg"></div>
 
-        <hr class="hr">
+        <hr class="hr" />
 
-        <button class="primary-btn" onclick="submitAll()">Submit All</button>
+        <button class="primary-btn" id="submitAllBtn">Submit All</button>
       </div>
 
       <!-- Pocket Form -->
@@ -510,9 +447,9 @@
         </select>
 
         <label>Amount (TZS)</label>
-        <input type="number" id="pocketAmount" placeholder="Amount" min="1" inputmode="numeric">
+        <input type="number" id="pocketAmount" placeholder="Amount" min="1" inputmode="numeric" />
 
-        <button class="primary-btn" onclick="addPocketMoney()">Save</button>
+        <button class="primary-btn" id="savePocketBtn">Save</button>
 
         <div class="subtle">
           If opening is already set today, the system will block another OPENING and ask you to use TOPUP.
@@ -525,13 +462,13 @@
 
         <label>Select Month</label>
         <div class="row">
-          <input type="month" id="reportMonth">
-          <button class="secondary-btn" onclick="loadMonthlyReport()">Load Report</button>
+          <input type="month" id="reportMonth" />
+          <button class="secondary-btn" id="loadReportBtn">Load Report</button>
         </div>
 
         <div id="reportAlert" class="alert"></div>
 
-        <hr class="hr">
+        <hr class="hr" />
 
         <div class="row">
           <div class="stat-box">
@@ -555,17 +492,17 @@
           </div>
         </div>
 
-        <hr class="hr">
+        <hr class="hr" />
 
         <h3 style="margin-bottom:8px;">Expenses by Category</h3>
         <div id="byCategory">No data</div>
 
-        <hr class="hr">
+        <hr class="hr" />
 
         <h3 style="margin-bottom:8px;">Daily Summary</h3>
         <div id="byDay">No data</div>
 
-        <hr class="hr">
+        <hr class="hr" />
 
         <h3 style="margin-bottom:8px;">Transactions (Month)</h3>
         <div id="monthTransactions">No data</div>
@@ -574,169 +511,214 @@
       <!-- Today's Transactions -->
       <div class="card">
         <h3>Today's Transactions</h3>
-        <div id="transactions">No transactions yet</div>
+        <div id="transactions">
+          <div class="skeleton" style="width:100%; height:40px;"></div>
+          <div class="skeleton" style="width:100%; height:40px;"></div>
+          <div class="skeleton" style="width:100%; height:40px;"></div>
+        </div>
       </div>
 
     </div>
   </div>
 
   <script>
-    // ========== CONFIGURATION ==========
+    // ================= CONFIGURATION =================
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF9cqcuA6G_mHh4yVisv2-5eNyx2GwhNaLqEk444yizaCdWPsfdtQ4LEO6a40BelVH/exec';
-    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+    const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
-    // Users (in production, use real authentication)
+    // NOTE: keeping your simple local auth for now (but not secure in production)
     const USERS = {
       cashier: { password: 'clinic123', role: 'Cashier' },
       admin: { password: 'admin123', role: 'Admin' }
     };
 
-    // Cache storage
-    const cache = {
-      today: { data: null, timestamp: 0 },
-      categories: { data: null, timestamp: 0 },
-      month: { data: null, timestamp: 0 }
-    };
-
-    // Global variables
+    // ================= STATE =================
     let currentUser = null;
     let pendingExpenses = [];
-    let allCategories = [];
     let isSubmitting = false;
 
-    // ========== INITIALIZATION ==========
-    document.addEventListener('DOMContentLoaded', function() {
-      console.log('DOM loaded, initializing app...');
-      
-      // Set up initial UI state
-      document.getElementById('loginScreen').classList.remove('hidden');
-      document.getElementById('mainScreen').classList.add('hidden');
+    // Cache (today/categories/month keyed by month)
+    const cache = {
+      today: { data: null, ts: 0 },
+      categories: { data: null, ts: 0 },
+      month: new Map() // key: 'YYYY-MM' -> { data, ts }
+    };
 
-      // Set default month
+    // ================= UTILITIES =================
+    function escapeHtml(str) {
+      const s = String(str ?? '');
+      return s.replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      })[m]);
+    }
+
+    function formatNumber(num) {
+      return Number(num || 0).toLocaleString('en-US');
+    }
+
+    function showInlineAlert(elId, msg, type = 'info') {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.textContent = msg;
+      el.className = `alert show ${type}`;
+    }
+
+    function clearAlert(elId) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.textContent = '';
+      el.className = 'alert';
+    }
+
+    function showAlert(msg, type = 'info') {
+      showInlineAlert('mainAlert', msg, type);
+      setTimeout(() => clearAlert('mainAlert'), 3500);
+    }
+
+    function setButtonLoading(btn, isLoading, labelWhenIdle) {
+      if (!btn) return;
+      if (isLoading) {
+        btn.disabled = true;
+        btn.innerHTML = `${escapeHtml(labelWhenIdle)} <span class="mini-spinner"></span>`;
+      } else {
+        btn.disabled = false;
+        btn.textContent = labelWhenIdle;
+      }
+    }
+
+    function updateOfflineUI() {
+      const offline = !navigator.onLine;
+      const indicator = document.getElementById('offlineIndicator');
+      indicator.classList.toggle('show', offline);
+
+      // Disable network-dependent actions when offline
+      const disableWhenOffline = [
+        document.getElementById('refreshBtn'),
+        document.getElementById('submitAllBtn'),
+        document.getElementById('savePocketBtn'),
+        document.getElementById('loadReportBtn')
+      ];
+      disableWhenOffline.forEach(btn => {
+        if (!btn) return;
+        btn.disabled = offline;
+        btn.style.opacity = offline ? '0.6' : '';
+      });
+    }
+
+    function updateCacheIndicator() {
+      const el = document.getElementById('refreshCacheIndicator');
+      if (!el) return;
+
+      const item = cache.today;
+      const valid = item.data && (Date.now() - item.ts) < CACHE_DURATION;
+      if (!valid) { el.textContent = ''; return; }
+
+      const secondsAgo = Math.round((Date.now() - item.ts) / 1000);
+      el.textContent = `📦 ${secondsAgo}s ago`;
+    }
+
+    // ================= NETWORK =================
+    async function postAction(action, params = {}, { timeoutMs = 7000 } = {}) {
+      const formData = new URLSearchParams();
+      formData.append('action', action);
+      for (const [k, v] of Object.entries(params)) formData.append(k, String(v));
+
+      const controller = new AbortController();
+      const t = setTimeout(() => controller.abort(), timeoutMs);
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: formData,
+          mode: 'cors',
+          signal: controller.signal
+        });
+        return await res.json();
+      } finally {
+        clearTimeout(t);
+      }
+    }
+
+    function getCached(key) {
+      const item = cache[key];
+      if (!item?.data) return null;
+      if ((Date.now() - item.ts) >= CACHE_DURATION) return null;
+      return item.data;
+    }
+
+    function setCached(key, data) {
+      cache[key] = { data, ts: Date.now() };
+      updateCacheIndicator();
+    }
+
+    function getCachedMonth(monthKey) {
+      const entry = cache.month.get(monthKey);
+      if (!entry) return null;
+      if ((Date.now() - entry.ts) >= CACHE_DURATION) return null;
+      return entry.data;
+    }
+
+    function setCachedMonth(monthKey, data) {
+      cache.month.set(monthKey, { data, ts: Date.now() });
+    }
+
+    // ================= INIT =================
+    document.addEventListener('DOMContentLoaded', () => {
+      // Default month
       const d = new Date();
       const yyyy = d.getFullYear();
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       document.getElementById('reportMonth').value = `${yyyy}-${mm}`;
 
-      // Add enter key handler for login
-      document.getElementById('password').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          login();
-        }
+      // Bind events (NO inline onclick anywhere)
+      document.getElementById('loginBtn').addEventListener('click', login);
+      document.getElementById('logoutBtn').addEventListener('click', logout);
+
+      document.getElementById('refreshBtn').addEventListener('click', refreshData);
+
+      document.getElementById('tabExpense').addEventListener('click', () => setActiveTab('expenseTab'));
+      document.getElementById('tabPocket').addEventListener('click', () => setActiveTab('pocketTab'));
+      document.getElementById('tabReports').addEventListener('click', () => setActiveTab('reportsTab'));
+
+      document.getElementById('addToListBtn').addEventListener('click', addToList);
+      document.getElementById('submitAllBtn').addEventListener('click', submitAll);
+
+      document.getElementById('savePocketBtn').addEventListener('click', addPocketMoney);
+      document.getElementById('loadReportBtn').addEventListener('click', loadMonthlyReport);
+
+      document.getElementById('clearAmountBtn').addEventListener('click', () => {
+        document.getElementById('expenseAmount').value = '';
+        document.getElementById('expenseAmount').focus();
       });
 
-      // Check online status
-      updateOnlineStatus();
-      
-      // Set up periodic refresh (every 5 minutes)
-      setInterval(function() {
-        if (currentUser && navigator.onLine) {
-          loadToday(true);
-        }
-      }, CACHE_DURATION);
+      document.querySelectorAll('[data-quick]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.getElementById('expenseAmount').value = btn.getAttribute('data-quick');
+          document.getElementById('expenseAmount').focus();
+        });
+      });
+
+      // Enter key login
+      document.getElementById('password').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') login();
+      });
+
+      // Online/offline events
+      window.addEventListener('online', updateOfflineUI);
+      window.addEventListener('offline', updateOfflineUI);
+      updateOfflineUI();
+
+      // Show fallback categories immediately, then load real categories if online
+      useFallbackCategories();
+      if (navigator.onLine) loadCategories().catch(() => {});
     });
 
-    // ========== ONLINE/OFFLINE DETECTION ==========
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-
-    function updateOnlineStatus() {
-      const indicator = document.getElementById('offlineIndicator');
-      if (navigator.onLine) {
-        indicator.classList.remove('show');
-        if (currentUser) refreshData();
-      } else {
-        indicator.classList.add('show');
-      }
-    }
-
-    // ========== LOADING UI ==========
-    function showLoading(message = 'Loading...') {
-      document.getElementById('loadingMessage').textContent = message;
-      document.getElementById('loadingOverlay').classList.add('show');
-    }
-
-    function hideLoading() {
-      document.getElementById('loadingOverlay').classList.remove('show');
-    }
-
-    // ========== CACHE MANAGEMENT ==========
-    function isCacheValid(cacheKey) {
-      const cacheItem = cache[cacheKey];
-      return cacheItem.data && (Date.now() - cacheItem.timestamp) < CACHE_DURATION;
-    }
-
-    function updateCache(cacheKey, data) {
-      cache[cacheKey] = {
-        data: data,
-        timestamp: Date.now()
-      };
-      updateCacheIndicator();
-    }
-
-    function updateCacheIndicator() {
-      const indicator = document.getElementById('refreshCacheIndicator');
-      if (isCacheValid('today')) {
-        const secondsAgo = Math.round((Date.now() - cache.today.timestamp) / 1000);
-        indicator.textContent = `📦 ${secondsAgo}s ago`;
-      } else {
-        indicator.textContent = '';
-      }
-    }
-
-    // ========== API FETCH WITH CACHE ==========
-    async function fetchWithCache(action, params = {}, useCache = true) {
-      const cacheKey = action === 'today' ? 'today' : 
-                      action === 'categories' ? 'categories' : 
-                      action === 'month' ? 'month' : null;
-      
-      // Check cache
-      if (useCache && cacheKey && isCacheValid(cacheKey)) {
-        console.log(`Using cached data for ${action}`);
-        return cache[cacheKey].data;
-      }
-
-      showLoading();
-      
-      try {
-        const formData = new URLSearchParams();
-        formData.append("action", action);
-        Object.keys(params).forEach(key => {
-          formData.append(key, params[key]);
-        });
-
-        const response = await fetch(SCRIPT_URL, { 
-          method: "POST", 
-          body: formData,
-          mode: 'cors',
-          cache: 'no-cache'
-        });
-        
-        const result = await response.json();
-        
-        // Update cache if applicable
-        if (cacheKey && result.success) {
-          updateCache(cacheKey, result);
-        }
-        
-        return result;
-      } catch (err) {
-        console.error(`Error in ${action}:`, err);
-        
-        // If offline and we have cached data, use it
-        if (!navigator.onLine && cache[cacheKey]?.data) {
-          showAlert('Using cached data (offline mode)', 'info');
-          return cache[cacheKey].data;
-        }
-        
-        throw err;
-      } finally {
-        hideLoading();
-      }
-    }
-
-    // ========== AUTHENTICATION ==========
-    window.login = async function() {
+    // ================= AUTH =================
+    async function login() {
       const u = document.getElementById('username').value.trim();
       const p = document.getElementById('password').value;
 
@@ -745,51 +727,36 @@
         return;
       }
 
-      showLoading('Logging in...');
-      
-      // Simulate delay for better UX
-      await new Promise(resolve => setTimeout(resolve, 300));
-
       const user = USERS[u];
-      if (user && user.password === p) {
-        currentUser = { username: u, name: u, role: user.role };
-
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('mainScreen').classList.remove('hidden');
-        document.getElementById('userDisplay').textContent = `${u} (${user.role})`;
-
-        clearAlert('loginAlert');
-        showExpense();
-        
-        // Load data in parallel
-        await Promise.all([
-          loadCategories(),
-          loadToday()
-        ]);
-      } else {
+      if (!user || user.password !== p) {
         showInlineAlert('loginAlert', 'Invalid username or password', 'error');
+        return;
       }
-      
-      hideLoading();
-    };
 
-    window.logout = function() {
-      location.reload();
-    };
+      clearAlert('loginAlert');
 
-    // ========== TAB MANAGEMENT ==========
-    window.showExpense = function() {
+      currentUser = { username: u, name: u, role: user.role };
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('mainScreen').classList.remove('hidden');
+      document.getElementById('userDisplay').textContent = `${u} (${user.role})`;
+
       setActiveTab('expenseTab');
-    };
 
-    window.showPocket = function() {
-      setActiveTab('pocketTab');
-    };
+      // Load today + categories (don’t block UI if something fails)
+      if (navigator.onLine) {
+        loadToday().catch(() => {});
+        loadCategories().catch(() => {});
+      } else {
+        showAlert('You are offline. Showing last cached data if available.', 'info');
+        renderTodayFromCacheIfAny();
+      }
+    }
 
-    window.showReports = function() {
-      setActiveTab('reportsTab');
-    };
+    function logout() {
+      location.reload();
+    }
 
+    // ================= TABS =================
     function setActiveTab(tabPanelId) {
       const tabs = [
         { btn: 'tabExpense', panel: 'expenseTab' },
@@ -803,69 +770,54 @@
       });
     }
 
-    // ========== QUICK ACTIONS ==========
-    window.quickAmount = function(amount) {
-      document.getElementById('expenseAmount').value = amount;
-    };
-
-    window.clearAmount = function() {
-      document.getElementById('expenseAmount').value = '';
-    };
-
-    // ========== CATEGORY MANAGEMENT ==========
-    async function loadCategories(forceRefresh = false) {
-      try {
-        const result = await fetchWithCache('categories', {}, !forceRefresh);
-
-        const select = document.getElementById("expenseCategory");
-        
-        if (result?.success && Array.isArray(result.categories)) {
-          allCategories = result.categories;
-          renderCategoryOptions(allCategories);
-        } else {
-          useFallbackCategories();
-        }
-      } catch (err) {
-        if (!cache.categories.data) {
-          useFallbackCategories();
-        }
-      }
-    }
-
+    // ================= CATEGORIES =================
     function useFallbackCategories() {
-      allCategories = ['Medical Supplies', 'Office Supplies', 'Staff Welfare', 'Utilities', 'Maintenance', 'Transport', 'Other'];
-      renderCategoryOptions(allCategories);
-    }
+      const select = document.getElementById('expenseCategory');
+      const cats = ['Medical Supplies', 'Office Supplies', 'Staff Welfare', 'Utilities', 'Maintenance', 'Transport', 'Other'];
 
-    function renderCategoryOptions(categories) {
-      const select = document.getElementById("expenseCategory");
       select.innerHTML = '<option value="">-- Select Category --</option>';
-      
-      categories.forEach(cat => {
-        const option = document.createElement("option");
-        option.value = cat;
-        option.textContent = cat;
-        select.appendChild(option);
+      cats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
       });
     }
 
-    window.filterCategories = function() {
-      const searchTerm = document.getElementById('categorySearch').value.toLowerCase();
-      const filtered = allCategories.filter(cat => 
-        cat.toLowerCase().includes(searchTerm)
-      );
-      renderCategoryOptions(filtered);
-    };
+    async function loadCategories(force = false) {
+      const cached = !force ? getCached('categories') : null;
+      if (cached?.success && Array.isArray(cached.categories)) {
+        renderCategories(cached.categories);
+        return;
+      }
 
-    // ========== PENDING EXPENSES ==========
-    window.addToList = function() {
+      const result = await postAction('categories');
+      if (result?.success && Array.isArray(result.categories)) {
+        setCached('categories', result);
+        renderCategories(result.categories);
+      }
+    }
+
+    function renderCategories(categories) {
+      const select = document.getElementById('expenseCategory');
+      select.innerHTML = '<option value="">-- Select Category --</option>';
+      categories.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+      });
+    }
+
+    // ================= PENDING EXPENSES =================
+    function addToList() {
       const category = document.getElementById('expenseCategory').value;
       const amount = Number(document.getElementById('expenseAmount').value);
       const source = document.getElementById('expenseSource').value;
       const comment = document.getElementById('expenseComment').value.trim();
 
       if (!category || !amount || amount <= 0) {
-        showAlert("Select category and enter a valid amount", "error");
+        showAlert('Select category and enter a valid amount', 'error');
         return;
       }
 
@@ -878,157 +830,192 @@
 
       renderExpenseList();
 
-      document.getElementById('expenseCategory').value = "";
-      document.getElementById('expenseAmount').value = "";
-      document.getElementById('expenseComment').value = "";
-    };
+      // Clear fields and keep flow fast
+      document.getElementById('expenseCategory').value = '';
+      document.getElementById('expenseAmount').value = '';
+      document.getElementById('expenseComment').value = '';
+      document.getElementById('expenseAmount').focus();
+    }
 
     function renderExpenseList() {
       const tbody = document.getElementById('expenseList');
       const hint = document.getElementById('pendingHint');
+      const totalEl = document.getElementById('pendingTotal');
 
       if (pendingExpenses.length === 0) {
-        tbody.innerHTML = "";
-        hint.textContent = "No pending items.";
+        tbody.innerHTML = '';
+        hint.textContent = 'No pending items.';
+        totalEl.style.display = 'none';
         return;
       }
 
-      hint.textContent = "";
-
+      hint.textContent = '';
       tbody.innerHTML = pendingExpenses.map((e, index) => `
         <tr>
           <td>${escapeHtml(e.category)}</td>
           <td>TZS ${formatNumber(e.amount)}</td>
           <td>${escapeHtml(e.source)}</td>
-          <td><button class="danger-btn" onclick="removeExpense(${index})">X</button></td>
+          <td><button class="danger-btn" data-remove="${index}">X</button></td>
         </tr>
       `).join('');
+
+      // Bind remove buttons (no inline onclick)
+      tbody.querySelectorAll('[data-remove]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = Number(btn.getAttribute('data-remove'));
+          pendingExpenses.splice(idx, 1);
+          renderExpenseList();
+        });
+      });
+
+      const total = pendingExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+      totalEl.textContent = `Total pending: TZS ${formatNumber(total)} (${pendingExpenses.length} item(s))`;
+      totalEl.style.display = 'block';
     }
 
-    window.removeExpense = function(index) {
-      pendingExpenses.splice(index, 1);
-      renderExpenseList();
-    };
-
-    // ========== SUBMIT EXPENSES ==========
-    window.submitAll = async function() {
+    // ================= SUBMIT EXPENSES =================
+    async function submitAll() {
       if (isSubmitting) return;
-      if (pendingExpenses.length === 0) {
-        showAlert("No expenses to submit", "error");
-        return;
-      }
+      if (!currentUser) { showAlert('Please login again.', 'error'); return; }
+      if (pendingExpenses.length === 0) { showAlert('No expenses to submit', 'error'); return; }
+      if (!navigator.onLine) { showAlert("You're offline. Connect to submit.", 'error'); return; }
+
+      if (!confirm(`Submit ${pendingExpenses.length} expense(s)?`)) return;
 
       isSubmitting = true;
-      showLoading('Submitting expenses...');
+      const btn = document.getElementById('submitAllBtn');
+      setButtonLoading(btn, true, 'Submitting...');
 
       try {
         const formData = new URLSearchParams();
-        formData.append("action", "bulkAdd");
-        formData.append("expenses", JSON.stringify(pendingExpenses));
-        formData.append("cashier", currentUser.name);
+        formData.append('action', 'bulkAdd');
+        formData.append('expenses', JSON.stringify(pendingExpenses));
+        formData.append('cashier', currentUser.name);
 
-        const res = await fetch(SCRIPT_URL, { method: "POST", body: formData });
+        const res = await fetch(SCRIPT_URL, { method: 'POST', body: formData, mode: 'cors' });
         const result = await res.json();
 
-        if (result.success) {
-          showSubmitMessage(`Submitted successfully: ${result.count || pendingExpenses.length} expense(s) saved.`);
-          
+        if (result?.success) {
+          showSubmitMessage(`Submitted: ${result.count || pendingExpenses.length} saved.`);
           pendingExpenses = [];
           renderExpenseList();
-          
-          // Invalidate cache and refresh
-          cache.today.timestamp = 0;
-          await loadToday();
+
+          // Invalidate today cache & reload
+          cache.today = { data: null, ts: 0 };
+          await loadToday(true);
         } else {
-          showAlert(result.error || "Error submitting expenses", "error");
+          showAlert(result?.error || 'Error submitting', 'error');
         }
       } catch (err) {
-        showAlert("Network error", "error");
+        console.error(err);
+        showAlert('Network error', 'error');
       } finally {
         isSubmitting = false;
-        hideLoading();
+        setButtonLoading(btn, false, 'Submit All');
+        updateOfflineUI();
       }
-    };
+    }
 
     function showSubmitMessage(text) {
       const el = document.getElementById('submitMessage');
       el.textContent = text;
       el.classList.add('show');
-      setTimeout(() => el.classList.remove('show'), 6000);
+      setTimeout(() => el.classList.remove('show'), 3500);
     }
 
-    // ========== POCKET MONEY ==========
-    window.addPocketMoney = async function() {
+    // ================= POCKET MONEY =================
+    async function addPocketMoney() {
+      if (!currentUser) { showAlert('Please login again.', 'error'); return; }
+      if (!navigator.onLine) { showAlert("You're offline. Connect to save.", 'error'); return; }
+
       const type = document.getElementById('pocketType').value;
       const amount = Number(document.getElementById('pocketAmount').value);
 
       if (!amount || amount <= 0) {
-        showAlert("Enter a valid amount", "error");
+        showAlert('Enter a valid amount', 'error');
         return;
       }
 
-      showLoading('Saving pocket money...');
+      const btn = document.getElementById('savePocketBtn');
+      setButtonLoading(btn, true, 'Saving...');
 
       const formData = new URLSearchParams();
-      formData.append("action", "add");
-      formData.append("type", type);
-      formData.append("category", "Pocket Money");
-      formData.append("amount", String(amount));
-      formData.append("description", type === "OPENING" ? "Opening balance" : "Pocket top-up");
-      formData.append("source", "POCKET");
-      formData.append("cashier", currentUser.name);
+      formData.append('action', 'add');
+      formData.append('type', type);
+      formData.append('category', 'Pocket Money');
+      formData.append('amount', String(amount));
+      formData.append('description', type === 'OPENING' ? 'Opening balance' : 'Pocket top-up');
+      formData.append('source', 'POCKET');
+      formData.append('cashier', currentUser.name);
 
       try {
-        const res = await fetch(SCRIPT_URL, { method: "POST", body: formData });
+        const res = await fetch(SCRIPT_URL, { method: 'POST', body: formData, mode: 'cors' });
         const result = await res.json();
 
-        if (result.success) {
-          showAlert(type === "OPENING" ? "Opening saved" : "Top-up saved", "success");
-          document.getElementById('pocketAmount').value = "";
-          
-          // Invalidate cache and refresh
-          cache.today.timestamp = 0;
-          await loadToday();
+        if (result?.success) {
+          showAlert(type === 'OPENING' ? 'Opening saved' : 'Top-up saved', 'success');
+          document.getElementById('pocketAmount').value = '';
+          cache.today = { data: null, ts: 0 };
+          await loadToday(true);
         } else {
-          showAlert(result.error || "Error saving pocket money", "error");
-          if ((result.error || "").toLowerCase().includes("opening")) {
-            document.getElementById('pocketType').value = "TOPUP";
+          showAlert(result?.error || 'Error saving', 'error');
+          if ((result?.error || '').toLowerCase().includes('opening')) {
+            document.getElementById('pocketType').value = 'TOPUP';
           }
         }
       } catch (err) {
-        showAlert("Network error", "error");
+        console.error(err);
+        showAlert('Network error', 'error');
       } finally {
-        hideLoading();
-      }
-    };
-
-    // ========== TODAY'S DATA ==========
-    async function loadToday(forceRefresh = false) {
-      try {
-        const result = await fetchWithCache('today', {}, !forceRefresh);
-
-        if (result?.success) {
-          const s = result.summary || {};
-          document.getElementById('pocketBalance').textContent = "TZS " + formatNumber(s.pocketBalance || 0);
-          document.getElementById('salesUsed').textContent = "TZS " + formatNumber(s.salesUsed || 0);
-          document.getElementById('statsNote').textContent =
-            `Pocket added today: TZS ${formatNumber(s.pocketAdded || 0)} · Pocket spent today: TZS ${formatNumber(s.pocketSpent || 0)}`;
-
-          renderTransactions(result.transactions || []);
-        }
-      } catch (err) {
-        console.error("Error loading today's data:", err);
-        if (!cache.today.data) {
-          document.getElementById('pocketBalance').textContent = "TZS 0";
-          document.getElementById('salesUsed').textContent = "TZS 0";
-          document.getElementById('statsNote').textContent = "Error loading data";
-          document.getElementById('transactions').innerHTML = `<div class="subtle error">Failed to load transactions.</div>`;
-        }
+        setButtonLoading(btn, false, 'Save');
+        updateOfflineUI();
       }
     }
 
-    window.refreshData = async function() {
-      showLoading('Refreshing all data...');
+    // ================= TODAY =================
+    function renderTodayFromCacheIfAny() {
+      const cached = getCached('today');
+      if (cached?.success) {
+        applyTodayResult(cached);
+      }
+    }
+
+    async function loadToday(force = false) {
+      const cached = !force ? getCached('today') : null;
+      if (cached?.success) {
+        applyTodayResult(cached);
+        return;
+      }
+
+      const result = await postAction('today');
+      if (result?.success) {
+        setCached('today', result);
+        applyTodayResult(result);
+      }
+    }
+
+    function applyTodayResult(result) {
+      const s = result.summary || {};
+      document.getElementById('pocketBalance').textContent = 'TZS ' + formatNumber(s.pocketBalance || 0);
+      document.getElementById('salesUsed').textContent = 'TZS ' + formatNumber(s.salesUsed || 0);
+      document.getElementById('statsNote').textContent =
+        `Pocket added: TZS ${formatNumber(s.pocketAdded || 0)} · Pocket spent: TZS ${formatNumber(s.pocketSpent || 0)}`;
+
+      renderTransactions(result.transactions || []);
+      updateCacheIndicator();
+    }
+
+    async function refreshData() {
+      if (!navigator.onLine) {
+        showAlert("You're offline.", 'info');
+        renderTodayFromCacheIfAny();
+        return;
+      }
+
+      const btn = document.getElementById('refreshBtn');
+      btn.disabled = true;
+      btn.innerHTML = `🔄 Refreshing <span class="mini-spinner"></span>`;
+
       try {
         await Promise.all([
           loadToday(true),
@@ -1036,11 +1023,15 @@
         ]);
         showAlert('Data refreshed', 'success');
       } catch (err) {
-        showAlert('Error refreshing data', 'error');
+        console.error(err);
+        showAlert('Error refreshing', 'error');
       } finally {
-        hideLoading();
+        btn.disabled = false;
+        btn.innerHTML = `🔄 Refresh <span id="refreshCacheIndicator" class="cache-indicator"></span>`;
+        updateCacheIndicator();
+        updateOfflineUI();
       }
-    };
+    }
 
     function renderTransactions(items) {
       const el = document.getElementById('transactions');
@@ -1050,26 +1041,26 @@
         return;
       }
 
-      const sorted = [...items].sort((a, b) => (a.time < b.time ? 1 : -1));
+      // show all (like your earlier version), sorted newest-first by time if possible
+      const sorted = [...items].sort((a, b) => String(a.time || '') < String(b.time || '') ? 1 : -1);
 
       el.innerHTML = sorted.map(t => {
-        let title = "";
-        if (t.type === "EXPENSE") {
-          title = `${t.category || t.desc || 'Expense'} — ${t.source === 'SALES' ? 'From Sales' : 'From Pocket'}`;
-        } else if (t.type === "OPENING") {
-          title = "Opening Balance";
-        } else if (t.type === "TOPUP") {
-          title = "Pocket Top-up";
+        let title = '';
+        if (t.type === 'EXPENSE') {
+          title = `${t.category || t.desc || 'Expense'} — ${t.source === 'SALES' ? 'Sales' : 'Pocket'}`;
+        } else if (t.type === 'OPENING') {
+          title = 'Opening Balance';
+        } else if (t.type === 'TOPUP') {
+          title = 'Pocket Top-up';
         } else {
-          title = t.desc || t.type || "Transaction";
+          title = t.desc || t.type || 'Transaction';
         }
 
-        const meta = `${t.time || ''} · ${t.cashier || 'Unknown'}`;
         return `
           <div class="transaction">
             <div>
               <div class="transaction-title">${escapeHtml(title)}</div>
-              <div class="transaction-meta">${escapeHtml(meta)}</div>
+              <div class="transaction-meta">${escapeHtml(t.time || '')}${t.cashier ? ' · ' + escapeHtml(t.cashier) : ''}</div>
             </div>
             <div><strong>TZS ${formatNumber(t.amount || 0)}</strong></div>
           </div>
@@ -1077,173 +1068,115 @@
       }).join('');
     }
 
-    // ========== MONTHLY REPORT ==========
-    window.loadMonthlyReport = async function() {
-      const month = document.getElementById('reportMonth').value;
+    // ================= MONTHLY REPORT =================
+    async function loadMonthlyReport() {
+      if (!navigator.onLine) { showInlineAlert('reportAlert', "You're offline. Connect to load report.", 'error'); return; }
+
+      const month = document.getElementById('reportMonth').value; // YYYY-MM
       if (!month) {
         showInlineAlert('reportAlert', 'Select a month', 'error');
         return;
       }
 
-      showLoading('Loading report...');
-      
-      try {
-        const result = await fetchWithCache('month', { month }, false);
+      const btn = document.getElementById('loadReportBtn');
+      setButtonLoading(btn, true, 'Loading...');
 
-        if (!result?.success) {
-          showInlineAlert('reportAlert', result?.error || 'Failed to load report', 'error');
+      try {
+        const cached = getCachedMonth(month);
+        if (cached?.success) {
+          applyMonthResult(cached);
+          clearAlert('reportAlert');
           return;
         }
 
+        const result = await postAction('month', { month });
+
+        if (!result?.success) {
+          showInlineAlert('reportAlert', result?.error || 'Failed to load', 'error');
+          return;
+        }
+
+        setCachedMonth(month, result);
         clearAlert('reportAlert');
-
-        const s = result.summary || {};
-        document.getElementById('mPocketAdded').textContent = "TZS " + formatNumber(s.pocketAdded || 0);
-        document.getElementById('mPocketSpent').textContent = "TZS " + formatNumber(s.pocketSpent || 0);
-        document.getElementById('mSalesUsed').textContent = "TZS " + formatNumber(s.salesUsed || 0);
-        document.getElementById('mPocketBalance').textContent = "TZS " + formatNumber(s.pocketBalance || 0);
-
-        renderByCategory(result.byCategory || []);
-        renderByDay(result.byDay || []);
-        renderMonthTransactions(result.transactions || []);
+        applyMonthResult(result);
 
       } catch (err) {
+        console.error(err);
         showInlineAlert('reportAlert', 'Network error', 'error');
       } finally {
-        hideLoading();
+        setButtonLoading(btn, false, 'Load Report');
+        updateOfflineUI();
       }
-    };
+    }
+
+    function applyMonthResult(result) {
+      const s = result.summary || {};
+      document.getElementById('mPocketAdded').textContent = 'TZS ' + formatNumber(s.pocketAdded || 0);
+      document.getElementById('mPocketSpent').textContent = 'TZS ' + formatNumber(s.pocketSpent || 0);
+      document.getElementById('mSalesUsed').textContent = 'TZS ' + formatNumber(s.salesUsed || 0);
+      document.getElementById('mPocketBalance').textContent = 'TZS ' + formatNumber(s.pocketBalance || 0);
+
+      // These keys depend on your Apps Script:
+      // If your backend returns arrays: result.byCategory, result.byDay, result.transactions -> it will render.
+      renderByCategory(result.byCategory || []);
+      renderByDay(result.byDay || []);
+      renderMonthTransactions(result.transactions || []);
+    }
 
     function renderByCategory(items) {
       const el = document.getElementById('byCategory');
       if (!items || items.length === 0) {
-        el.innerHTML = `<div class="subtle">No expense data for this month.</div>`;
+        el.innerHTML = `<div class="subtle">No data</div>`;
         return;
       }
 
-      el.innerHTML = `
-        <table>
-          <thead>
-            <tr><th>Category</th><th>Total</th></tr>
-          </thead>
-          <tbody>
-            ${items.map(x => `
-              <tr>
-                <td>${escapeHtml(x.category || 'Uncategorized')}</td>
-                <td><strong>TZS ${formatNumber(x.total || 0)}</strong></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
+      el.innerHTML = items.map(x => `
+        <div class="transaction">
+          <div>
+            <div class="transaction-title">${escapeHtml(x.category || 'Uncategorized')}</div>
+            <div class="transaction-meta">Total</div>
+          </div>
+          <div><strong>TZS ${formatNumber(x.total || 0)}</strong></div>
+        </div>
+      `).join('');
     }
 
     function renderByDay(items) {
       const el = document.getElementById('byDay');
       if (!items || items.length === 0) {
-        el.innerHTML = `<div class="subtle">No daily data for this month.</div>`;
+        el.innerHTML = `<div class="subtle">No data</div>`;
         return;
       }
 
-      el.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Pocket Added</th>
-              <th>Pocket Spent</th>
-              <th>Sales Used</th>
-              <th>Pocket Balance</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${items.map(d => `
-              <tr>
-                <td>${escapeHtml(d.date)}</td>
-                <td>TZS ${formatNumber(d.pocketAdded || 0)}</td>
-                <td>TZS ${formatNumber(d.pocketSpent || 0)}</td>
-                <td>TZS ${formatNumber(d.salesUsed || 0)}</td>
-                <td><strong>TZS ${formatNumber(d.pocketBalance || 0)}</strong></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
+      el.innerHTML = items.map(d => `
+        <div class="transaction">
+          <div>
+            <div class="transaction-title">${escapeHtml(d.date || '')}</div>
+            <div class="transaction-meta">
+              Pocket Added: TZS ${formatNumber(d.pocketAdded || 0)} · Pocket Spent: TZS ${formatNumber(d.pocketSpent || 0)} · Sales Used: TZS ${formatNumber(d.salesUsed || 0)}
+            </div>
+          </div>
+          <div><strong>—</strong></div>
+        </div>
+      `).join('');
     }
 
     function renderMonthTransactions(items) {
       const el = document.getElementById('monthTransactions');
       if (!items || items.length === 0) {
-        el.innerHTML = `<div class="subtle">No transactions for this month.</div>`;
+        el.innerHTML = `<div class="subtle">No data</div>`;
         return;
       }
 
-      const sorted = [...items].sort((a, b) => {
-        if (a.date === b.date) return (a.time < b.time ? 1 : -1);
-        return a.date < b.date ? 1 : -1;
-      });
-
-      el.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Type</th>
-              <th>Category</th>
-              <th>Source</th>
-              <th>Amount</th>
-              <th>Cashier</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${sorted.map(t => `
-              <tr>
-                <td>${escapeHtml(t.date || '')}</td>
-                <td>${escapeHtml(t.time || '')}</td>
-                <td>${escapeHtml(t.type || '')}</td>
-                <td>${escapeHtml(t.category || '')}</td>
-                <td>${escapeHtml(t.source || '')}</td>
-                <td><strong>TZS ${formatNumber(t.amount || 0)}</strong></td>
-                <td>${escapeHtml(t.cashier || '')}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-    }
-
-    // ========== UI HELPERS ==========
-    function showAlert(msg, type) {
-      const el = document.getElementById('mainAlert');
-      el.textContent = msg;
-      el.className = `alert show ${type}`;
-      setTimeout(() => el.classList.remove("show"), 3500);
-    }
-
-    function showInlineAlert(elId, msg, type) {
-      const el = document.getElementById(elId);
-      el.textContent = msg;
-      el.className = `alert show ${type}`;
-    }
-
-    function clearAlert(elId) {
-      const el = document.getElementById(elId);
-      el.textContent = "";
-      el.className = "alert";
-    }
-
-    function formatNumber(num) {
-      return Number(num || 0).toLocaleString('en-US');
-    }
-
-    function escapeHtml(str) {
-      return String(str ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+      el.innerHTML = items.map(t => `
+        <div class="transaction">
+          <div>
+            <div class="transaction-title">${escapeHtml(t.category || t.type || 'Transaction')}</div>
+            <div class="transaction-meta">${escapeHtml((t.date || '') + ' ' + (t.time || ''))}</div>
+          </div>
+          <div><strong>TZS ${formatNumber(t.amount || 0)}</strong></div>
+        </div>
+      `).join('');
     }
   </script>
 </body>
