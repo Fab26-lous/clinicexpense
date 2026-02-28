@@ -3,6 +3,9 @@
 <head>
   <title>Clinic Expense Management</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -74,6 +77,7 @@
     }
 
     button:active { transform: translateY(1px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .primary-btn {
       width: 100%;
@@ -232,7 +236,6 @@
       margin: 18px 0;
     }
 
-    /* Inline submission message (non-popup) */
     .inline-msg {
       display: none;
       margin-top: 12px;
@@ -245,6 +248,108 @@
     }
     .inline-msg.show { display: block; }
 
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(0,0,0,.1);
+      border-radius: 50%;
+      border-top-color: #1e3a5f;
+      animation: spin 0.6s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255,255,255,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .loading-overlay.show {
+      display: flex;
+    }
+    
+    .loading-content {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    /* Quick action buttons */
+    .quick-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 10px 0;
+    }
+    
+    .quick-action-btn {
+      background: #e9edf3;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .quick-action-btn:hover {
+      background: #d0d9e8;
+    }
+    
+    /* Offline indicator */
+    .offline-indicator {
+      background: #ff9800;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      display: none;
+    }
+    
+    .offline-indicator.show {
+      display: inline-block;
+    }
+    
+    /* Search box */
+    .search-box {
+      margin-bottom: 15px;
+    }
+    
+    .search-box input {
+      padding: 8px 12px;
+      border-radius: 20px;
+      border: 1px solid #dcdfe6;
+      width: 100%;
+    }
+    
+    /* Cache indicator */
+    .cache-indicator {
+      font-size: 0.7rem;
+      color: #6c757d;
+      margin-left: 10px;
+    }
+
+    select[multiple], select[size] {
+      height: auto;
+      min-height: 120px;
+    }
+
     @media (max-width: 640px) {
       body { padding: 14px; }
       .row { grid-template-columns: 1fr; }
@@ -255,8 +360,15 @@
 </head>
 
 <body>
-  <div class="container">
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <span id="loadingMessage">Loading...</span>
+    </div>
+  </div>
 
+  <div class="container">
     <!-- LOGIN -->
     <div id="loginScreen" class="card">
       <div class="app-title">Clinic Expense Management</div>
@@ -277,6 +389,10 @@
       <div class="topbar">
         <div class="app-title" style="margin:0;">Expense Dashboard</div>
         <div style="display:flex; gap:10px; align-items:center;">
+          <!-- Offline indicator -->
+          <div id="offlineIndicator" class="offline-indicator">
+            ⚠ Offline Mode
+          </div>
           <div class="user-pill">
             <span id="userDisplay">—</span>
           </div>
@@ -286,8 +402,15 @@
 
       <div id="mainAlert" class="alert"></div>
 
-      <!-- Stats -->
+      <!-- Stats with refresh button -->
       <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h3 style="margin:0;">Today's Summary</h3>
+          <button class="quick-action-btn" onclick="refreshData()">
+            🔄 Refresh
+            <span id="refreshCacheIndicator" class="cache-indicator"></span>
+          </button>
+        </div>
         <div class="row">
           <div class="stat-box">
             <div class="stat-label">Pocket Balance</div>
@@ -301,6 +424,15 @@
         <div class="subtle" id="statsNote">—</div>
       </div>
 
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button class="quick-action-btn" onclick="quickAmount(5000)">+ TZS 5,000</button>
+        <button class="quick-action-btn" onclick="quickAmount(10000)">+ TZS 10,000</button>
+        <button class="quick-action-btn" onclick="quickAmount(20000)">+ TZS 20,000</button>
+        <button class="quick-action-btn" onclick="quickAmount(50000)">+ TZS 50,000</button>
+        <button class="quick-action-btn" onclick="clearAmount()">Clear</button>
+      </div>
+
       <!-- Tabs -->
       <div class="tabs">
         <button id="tabExpense" class="tab active" onclick="showExpense()">Add Expense</button>
@@ -312,8 +444,13 @@
       <div id="expenseTab" class="card">
         <h3>Record Expense</h3>
 
+        <!-- Category search -->
+        <div class="search-box">
+          <input type="text" id="categorySearch" placeholder="🔍 Search categories..." onkeyup="filterCategories()">
+        </div>
+
         <label>Expense Category</label>
-        <select id="expenseCategory">
+        <select id="expenseCategory" size="5">
           <option value="">-- Select Category --</option>
         </select>
 
@@ -354,7 +491,7 @@
 
         <div class="subtle" id="pendingHint">No pending items.</div>
 
-        <!-- Inline submission message (not popup) -->
+        <!-- Inline submission message -->
         <div id="submitMessage" class="inline-msg"></div>
 
         <hr class="hr">
@@ -443,37 +580,136 @@
     </div>
   </div>
 
- <script>
+  <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF9cqcuA6G_mHh4yVisv2-5eNyx2GwhNaLqEk444yizaCdWPsfdtQ4LEO6a40BelVH/exec';
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
-    // Replace with real auth later if needed
+    // Users (in production, use real authentication)
     const USERS = {
       cashier: { password: 'clinic123', role: 'Cashier' },
       admin: { password: 'admin123', role: 'Admin' }
     };
 
+    // Cache storage
+    const cache = {
+      today: { data: null, timestamp: 0 },
+      categories: { data: null, timestamp: 0 },
+      month: { data: null, timestamp: 0 }
+    };
+
     let currentUser = null;
     let pendingExpenses = [];
+    let allCategories = [];
+    let isSubmitting = false;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      document.getElementById('loginScreen').classList.remove('hidden');
-      document.getElementById('mainScreen').classList.add('hidden');
+    // ========== LOADING & UI STATE ==========
+    function showLoading(message = 'Loading...') {
+      document.getElementById('loadingMessage').textContent = message;
+      document.getElementById('loadingOverlay').classList.add('show');
+    }
 
-      // Default month picker to current month
-      const d = new Date();
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      document.getElementById('reportMonth').value = `${yyyy}-${mm}`;
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('show');
+    }
 
-      document.getElementById('password').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') login();
-      });
-    });
+    // Online/offline detection
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
 
-    // AUTH
-    function login() {
+    function updateOnlineStatus() {
+      const indicator = document.getElementById('offlineIndicator');
+      if (navigator.onLine) {
+        indicator.classList.remove('show');
+        if (currentUser) refreshData();
+      } else {
+        indicator.classList.add('show');
+      }
+    }
+
+    // ========== CACHE MANAGEMENT ==========
+    function isCacheValid(cacheKey) {
+      const cacheItem = cache[cacheKey];
+      return cacheItem.data && (Date.now() - cacheItem.timestamp) < CACHE_DURATION;
+    }
+
+    function updateCache(cacheKey, data) {
+      cache[cacheKey] = {
+        data: data,
+        timestamp: Date.now()
+      };
+      updateCacheIndicator();
+    }
+
+    function updateCacheIndicator() {
+      const indicator = document.getElementById('refreshCacheIndicator');
+      if (isCacheValid('today')) {
+        const secondsAgo = Math.round((Date.now() - cache.today.timestamp) / 1000);
+        indicator.textContent = `📦 ${secondsAgo}s ago`;
+      } else {
+        indicator.textContent = '';
+      }
+    }
+
+    // ========== API FETCH WITH CACHE ==========
+    async function fetchWithCache(action, params = {}, useCache = true) {
+      const cacheKey = action === 'today' ? 'today' : 
+                      action === 'categories' ? 'categories' : 
+                      action === 'month' ? 'month' : null;
+      
+      // Check cache
+      if (useCache && cacheKey && isCacheValid(cacheKey)) {
+        console.log(`Using cached data for ${action}`);
+        return cache[cacheKey].data;
+      }
+
+      showLoading();
+      
+      try {
+        const formData = new URLSearchParams();
+        formData.append("action", action);
+        Object.keys(params).forEach(key => {
+          formData.append(key, params[key]);
+        });
+
+        const response = await fetch(SCRIPT_URL, { 
+          method: "POST", 
+          body: formData,
+          mode: 'cors',
+          cache: 'no-cache'
+        });
+        
+        const result = await response.json();
+        
+        // Update cache if applicable
+        if (cacheKey && result.success) {
+          updateCache(cacheKey, result);
+        }
+        
+        return result;
+      } catch (err) {
+        console.error(`Error in ${action}:`, err);
+        
+        // If offline and we have cached data, use it
+        if (!navigator.onLine && cache[cacheKey]?.data) {
+          showAlert('Using cached data (offline mode)', 'info');
+          return cache[cacheKey].data;
+        }
+        
+        throw err;
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // ========== AUTHENTICATION ==========
+    async function login() {
       const u = document.getElementById('username').value.trim();
       const p = document.getElementById('password').value;
+
+      showLoading('Logging in...');
+      
+      // Simulate delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       const user = USERS[u];
       if (user && user.password === p) {
@@ -485,18 +721,24 @@
 
         clearAlert('loginAlert');
         showExpense();
-        loadCategories();
-        loadToday();
+        
+        // Load data in parallel
+        await Promise.all([
+          loadCategories(),
+          loadToday()
+        ]);
       } else {
         showInlineAlert('loginAlert', 'Invalid username or password', 'error');
       }
+      
+      hideLoading();
     }
 
     function logout() {
       location.reload();
     }
 
-    // TABS
+    // ========== TAB MANAGEMENT ==========
     function setActiveTab(tabPanelId) {
       const tabs = [
         { btn: 'tabExpense', panel: 'expenseTab' },
@@ -514,7 +756,77 @@
     function showPocket() { setActiveTab('pocketTab'); }
     function showReports() { setActiveTab('reportsTab'); }
 
-    // PENDING EXPENSES
+    // ========== QUICK ACTIONS ==========
+    function quickAmount(amount) {
+      document.getElementById('expenseAmount').value = amount;
+    }
+
+    function clearAmount() {
+      document.getElementById('expenseAmount').value = '';
+    }
+
+    // ========== CATEGORY MANAGEMENT ==========
+    async function loadCategories(forceRefresh = false) {
+      try {
+        const result = await fetchWithCache('categories', {}, !forceRefresh);
+
+        const select = document.getElementById("expenseCategory");
+        
+        if (result?.success && Array.isArray(result.categories)) {
+          allCategories = result.categories;
+          renderCategoryOptions(allCategories);
+        } else {
+          useFallbackCategories();
+        }
+      } catch (err) {
+        if (!cache.categories.data) {
+          useFallbackCategories();
+        }
+      }
+    }
+
+    function useFallbackCategories() {
+      allCategories = ['Medical Supplies', 'Office Supplies', 'Staff Welfare', 'Utilities', 'Maintenance', 'Transport', 'Other'];
+      renderCategoryOptions(allCategories);
+    }
+
+    function renderCategoryOptions(categories) {
+      const select = document.getElementById("expenseCategory");
+      select.innerHTML = '<option value="">-- Select Category --</option>';
+      
+      categories.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat;
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+    }
+
+    // Debounced search
+    function debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    }
+
+    function filterCategories() {
+      const searchTerm = document.getElementById('categorySearch').value.toLowerCase();
+      const filtered = allCategories.filter(cat => 
+        cat.toLowerCase().includes(searchTerm)
+      );
+      renderCategoryOptions(filtered);
+    }
+
+    const debouncedFilter = debounce(filterCategories, 300);
+    document.getElementById('categorySearch').addEventListener('input', debouncedFilter);
+
+    // ========== PENDING EXPENSES ==========
     function addToList() {
       const category = document.getElementById('expenseCategory').value;
       const amount = Number(document.getElementById('expenseAmount').value);
@@ -567,23 +879,57 @@
       renderExpenseList();
     }
 
-    // Inline submission message (not popup)
-    function showSubmitMessage(text) {
-      const el = document.getElementById('submitMessage');
-      el.textContent = text;
-      el.classList.add('show');
-      setTimeout(() => el.classList.remove('show'), 6000);
+    // ========== SUBMIT EXPENSES ==========
+    async function submitAll() {
+      if (isSubmitting) return;
+      if (pendingExpenses.length === 0) {
+        showAlert("No expenses to submit", "error");
+        return;
+      }
+
+      isSubmitting = true;
+      showLoading('Submitting expenses...');
+
+      try {
+        const formData = new URLSearchParams();
+        formData.append("action", "bulkAdd");
+        formData.append("expenses", JSON.stringify(pendingExpenses));
+        formData.append("cashier", currentUser.name);
+
+        const res = await fetch(SCRIPT_URL, { method: "POST", body: formData });
+        const result = await res.json();
+
+        if (result.success) {
+          showSubmitMessage(`Submitted successfully: ${result.count || pendingExpenses.length} expense(s) saved.`);
+          
+          pendingExpenses = [];
+          renderExpenseList();
+          
+          // Invalidate cache and refresh
+          cache.today.timestamp = 0;
+          await loadToday();
+        } else {
+          showAlert(result.error || "Error submitting expenses", "error");
+        }
+      } catch (err) {
+        showAlert("Network error", "error");
+      } finally {
+        isSubmitting = false;
+        hideLoading();
+      }
     }
 
-    // API: POCKET MONEY
+    // ========== POCKET MONEY ==========
     async function addPocketMoney() {
-      const type = document.getElementById('pocketType').value; // OPENING or TOPUP
+      const type = document.getElementById('pocketType').value;
       const amount = Number(document.getElementById('pocketAmount').value);
 
       if (!amount || amount <= 0) {
         showAlert("Enter a valid amount", "error");
         return;
       }
+
+      showLoading('Saving pocket money...');
 
       const formData = new URLSearchParams();
       formData.append("action", "add");
@@ -601,7 +947,10 @@
         if (result.success) {
           showAlert(type === "OPENING" ? "Opening saved" : "Top-up saved", "success");
           document.getElementById('pocketAmount').value = "";
-          loadToday();
+          
+          // Invalidate cache and refresh
+          cache.today.timestamp = 0;
+          await loadToday();
         } else {
           showAlert(result.error || "Error saving pocket money", "error");
           if ((result.error || "").toLowerCase().includes("opening")) {
@@ -610,77 +959,33 @@
         }
       } catch (err) {
         showAlert("Network error", "error");
+      } finally {
+        hideLoading();
       }
     }
 
-    // API: SUBMIT EXPENSES (BULK)
-    async function submitAll() {
-      if (pendingExpenses.length === 0) {
-        showAlert("No expenses to submit", "error");
-        return;
-      }
-
-      // clear old message
-      document.getElementById('submitMessage').classList.remove('show');
-      document.getElementById('submitMessage').textContent = "";
-
-      const formData = new URLSearchParams();
-      formData.append("action", "bulkAdd");
-      formData.append("expenses", JSON.stringify(pendingExpenses));
-      formData.append("cashier", currentUser.name);
-
+    // ========== TODAY'S DATA ==========
+    async function loadToday(forceRefresh = false) {
       try {
-        const res = await fetch(SCRIPT_URL, { method: "POST", body: formData });
-        const result = await res.json();
+        const result = await fetchWithCache('today', {}, !forceRefresh);
 
-        if (result.success) {
-          const count = result.count || pendingExpenses.length;
-          showSubmitMessage(`Submitted successfully: ${count} expense(s) saved.`);
-
-          pendingExpenses = [];
-          renderExpenseList();
-          loadToday();
-        } else {
-          showAlert(result.error || "Error submitting expenses", "error");
-        }
-      } catch (err) {
-        showAlert("Network error", "error");
-      }
-    }
-
-    // API: LOAD TODAY
-    async function loadToday() {
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: new URLSearchParams({ action: "today" })
-        });
-
-        const result = await res.json();
-
-        if (result.success) {
+        if (result?.success) {
           const s = result.summary || {};
           document.getElementById('pocketBalance').textContent = "TZS " + formatNumber(s.pocketBalance || 0);
           document.getElementById('salesUsed').textContent = "TZS " + formatNumber(s.salesUsed || 0);
-
           document.getElementById('statsNote').textContent =
             `Pocket added today: TZS ${formatNumber(s.pocketAdded || 0)} · Pocket spent today: TZS ${formatNumber(s.pocketSpent || 0)}`;
 
           renderTransactions(result.transactions || []);
-        } else {
-          // Show empty state instead of sample data
-          document.getElementById('pocketBalance').textContent = "TZS 0";
-          document.getElementById('salesUsed').textContent = "TZS 0";
-          document.getElementById('statsNote').textContent = "No data available";
-          document.getElementById('transactions').innerHTML = `<div class="subtle">No transactions yet.</div>`;
         }
       } catch (err) {
         console.error("Error loading today's data:", err);
-        // Show error state
-        document.getElementById('pocketBalance').textContent = "TZS 0";
-        document.getElementById('salesUsed').textContent = "TZS 0";
-        document.getElementById('statsNote').textContent = "Error loading data";
-        document.getElementById('transactions').innerHTML = `<div class="subtle error">Failed to load transactions. Please try again.</div>`;
+        if (!cache.today.data) {
+          document.getElementById('pocketBalance').textContent = "TZS 0";
+          document.getElementById('salesUsed').textContent = "TZS 0";
+          document.getElementById('statsNote').textContent = "Error loading data";
+          document.getElementById('transactions').innerHTML = `<div class="subtle error">Failed to load transactions.</div>`;
+        }
       }
     }
 
@@ -719,66 +1024,21 @@
       }).join('');
     }
 
-    // API: CATEGORIES
-    async function loadCategories() {
-      try {
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: new URLSearchParams({ action: "categories" })
-        });
-
-        const result = await res.json();
-
-        const select = document.getElementById("expenseCategory");
-        select.innerHTML = '<option value="">-- Select Category --</option>';
-
-        if (result.success && Array.isArray(result.categories)) {
-          result.categories.forEach(cat => {
-            const option = document.createElement("option");
-            option.value = cat;
-            option.textContent = cat;
-            select.appendChild(option);
-          });
-        } else {
-          useFallbackCategories();
-        }
-      } catch (err) {
-        useFallbackCategories();
-      }
-    }
-
-    function useFallbackCategories() {
-      const select = document.getElementById("expenseCategory");
-      select.innerHTML = '<option value="">-- Select Category --</option>';
-      ['Medical Supplies', 'Office Supplies', 'Staff Welfare', 'Utilities', 'Maintenance', 'Transport', 'Other']
-        .forEach(cat => {
-          const option = document.createElement("option");
-          option.value = cat;
-          option.textContent = cat;
-          select.appendChild(option);
-        });
-    }
-
-    // MONTHLY REPORT
+    // ========== MONTHLY REPORT ==========
     async function loadMonthlyReport() {
-      const month = document.getElementById('reportMonth').value; // YYYY-MM
+      const month = document.getElementById('reportMonth').value;
       if (!month) {
         showInlineAlert('reportAlert', 'Select a month', 'error');
         return;
       }
 
-      showInlineAlert('reportAlert', 'Loading report...', 'info');
-
+      showLoading('Loading report...');
+      
       try {
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body: new URLSearchParams({ action: "month", month })
-        });
+        const result = await fetchWithCache('month', { month }, false);
 
-        const result = await res.json();
-
-        if (!result.success) {
-          showInlineAlert('reportAlert', result.error || 'Failed to load report', 'error');
+        if (!result?.success) {
+          showInlineAlert('reportAlert', result?.error || 'Failed to load report', 'error');
           return;
         }
 
@@ -796,6 +1056,8 @@
 
       } catch (err) {
         showInlineAlert('reportAlert', 'Network error', 'error');
+      } finally {
+        hideLoading();
       }
     }
 
@@ -816,120 +1078,4 @@
               <tr>
                 <td>${escapeHtml(x.category || 'Uncategorized')}</td>
                 <td><strong>TZS ${formatNumber(x.total || 0)}</strong></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-    }
-
-    function renderByDay(items) {
-      const el = document.getElementById('byDay');
-      if (!items || items.length === 0) {
-        el.innerHTML = `<div class="subtle">No daily data for this month.</div>`;
-        return;
-      }
-
-      el.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Pocket Added</th>
-              <th>Pocket Spent</th>
-              <th>Sales Used</th>
-              <th>Pocket Balance</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${items.map(d => `
-              <tr>
-                <td>${escapeHtml(d.date)}</td>
-                <td>TZS ${formatNumber(d.pocketAdded || 0)}</td>
-                <td>TZS ${formatNumber(d.pocketSpent || 0)}</td>
-                <td>TZS ${formatNumber(d.salesUsed || 0)}</td>
-                <td><strong>TZS ${formatNumber(d.pocketBalance || 0)}</strong></td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-    }
-
-    function renderMonthTransactions(items) {
-      const el = document.getElementById('monthTransactions');
-      if (!items || items.length === 0) {
-        el.innerHTML = `<div class="subtle">No transactions for this month.</div>`;
-        return;
-      }
-
-      const sorted = [...items].sort((a, b) => {
-        if (a.date === b.date) return (a.time < b.time ? 1 : -1);
-        return a.date < b.date ? 1 : -1;
-      });
-
-      el.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Type</th>
-              <th>Category</th>
-              <th>Source</th>
-              <th>Amount</th>
-              <th>Cashier</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${sorted.map(t => `
-              <tr>
-                <td>${escapeHtml(t.date || '')}</td>
-                <td>${escapeHtml(t.time || '')}</td>
-                <td>${escapeHtml(t.type || '')}</td>
-                <td>${escapeHtml(t.category || '')}</td>
-                <td>${escapeHtml(t.source || '')}</td>
-                <td><strong>TZS ${formatNumber(t.amount || 0)}</strong></td>
-                <td>${escapeHtml(t.cashier || '')}</td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
-      `;
-    }
-
-    // UI HELPERS
-    function showAlert(msg, type) {
-      const el = document.getElementById('mainAlert');
-      el.textContent = msg;
-      el.className = `alert show ${type}`;
-      setTimeout(() => el.classList.remove("show"), 3500);
-    }
-
-    function showInlineAlert(elId, msg, type) {
-      const el = document.getElementById(elId);
-      el.textContent = msg;
-      el.className = `alert show ${type}`;
-    }
-
-    function clearAlert(elId) {
-      const el = document.getElementById(elId);
-      el.textContent = "";
-      el.className = "alert";
-    }
-
-    function formatNumber(num) {
-      return Number(num || 0).toLocaleString('en-US');
-    }
-
-    function escapeHtml(str) {
-      return String(str ?? '')
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-  </script>
-</body>
-</html>
+              </tr
