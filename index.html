@@ -80,7 +80,6 @@
       background: #1e3a5f;
       color: white;
     }
-
     .primary-btn:hover { opacity: .95; }
 
     .secondary-btn {
@@ -233,6 +232,19 @@
       margin: 18px 0;
     }
 
+    /* Inline submission message (non-popup) */
+    .inline-msg {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-weight: 800;
+      border: 1px solid #cdebd6;
+      background: #e6f4ea;
+      color: #1e7e34;
+    }
+    .inline-msg.show { display: block; }
+
     @media (max-width: 640px) {
       body { padding: 14px; }
       .row { grid-template-columns: 1fr; }
@@ -251,16 +263,12 @@
       <div id="loginAlert" class="alert"></div>
 
       <label>Username</label>
-      <input type="text" id="username" placeholder="e.g. cashier" autocomplete="username">
+      <input type="text" id="username" placeholder="Username" autocomplete="username">
 
       <label>Password</label>
-      <input type="password" id="password" placeholder="Enter password" autocomplete="current-password">
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password">
 
       <button class="primary-btn" onclick="login()">Login</button>
-
-      <div class="subtle">
-        Demo users (change later): <strong>cashier</strong> / clinic123, <strong>admin</strong> / admin123
-      </div>
     </div>
 
     <!-- MAIN APP -->
@@ -324,7 +332,7 @@
         </div>
 
         <label>Additional Comments (Optional)</label>
-        <input type="text" id="expenseComment" placeholder="e.g. bought gloves and syringes">
+        <input type="text" id="expenseComment" placeholder="Optional notes">
 
         <button class="secondary-btn" onclick="addToList()">Add to List</button>
 
@@ -345,6 +353,9 @@
         </table>
 
         <div class="subtle" id="pendingHint">No pending items.</div>
+
+        <!-- Inline submission message (not popup) -->
+        <div id="submitMessage" class="inline-msg"></div>
 
         <hr class="hr">
 
@@ -367,7 +378,7 @@
         <button class="primary-btn" onclick="addPocketMoney()">Save</button>
 
         <div class="subtle">
-          Note: If opening is already set today, the system will block another OPENING and ask you to use TOPUP.
+          If opening is already set today, the system will block another OPENING and ask you to use TOPUP.
         </div>
       </div>
 
@@ -433,12 +444,9 @@
   </div>
 
   <script>
-    // ============================
-    // CONFIG
-    // ============================
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF9cqcuA6G_mHh4yVisv2-5eNyx2GwhNaLqEk444yizaCdWPsfdtQ4LEO6a40BelVH/exec';
 
-    // Demo users only (replace with proper auth later)
+    // Replace with real auth later if needed
     const USERS = {
       cashier: { password: 'clinic123', role: 'Cashier' },
       admin: { password: 'admin123', role: 'Admin' }
@@ -457,15 +465,12 @@
       const mm = String(d.getMonth() + 1).padStart(2, '0');
       document.getElementById('reportMonth').value = `${yyyy}-${mm}`;
 
-      // Enter-to-login
       document.getElementById('password').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') login();
       });
     });
 
-    // ============================
     // AUTH
-    // ============================
     function login() {
       const u = document.getElementById('username').value.trim();
       const p = document.getElementById('password').value;
@@ -491,10 +496,8 @@
       location.reload();
     }
 
-    // ============================
     // TABS
-    // ============================
-    function setActiveTab(tabId) {
+    function setActiveTab(tabPanelId) {
       const tabs = [
         { btn: 'tabExpense', panel: 'expenseTab' },
         { btn: 'tabPocket', panel: 'pocketTab' },
@@ -502,8 +505,8 @@
       ];
 
       tabs.forEach(t => {
-        document.getElementById(t.panel).classList.toggle('hidden', t.panel !== tabId);
-        document.getElementById(t.btn).classList.toggle('active', t.panel === tabId);
+        document.getElementById(t.panel).classList.toggle('hidden', t.panel !== tabPanelId);
+        document.getElementById(t.btn).classList.toggle('active', t.panel === tabPanelId);
       });
     }
 
@@ -511,9 +514,7 @@
     function showPocket() { setActiveTab('pocketTab'); }
     function showReports() { setActiveTab('reportsTab'); }
 
-    // ============================
     // PENDING EXPENSES
-    // ============================
     function addToList() {
       const category = document.getElementById('expenseCategory').value;
       const amount = Number(document.getElementById('expenseAmount').value);
@@ -566,9 +567,16 @@
       renderExpenseList();
     }
 
-    // ============================
-    // API: POCKET MONEY (OPENING / TOPUP) with daily lock enforced by server
-    // ============================
+    // Inline submission message (not popup)
+    function showSubmitMessage(text) {
+      const el = document.getElementById('submitMessage');
+      el.textContent = text;
+      el.classList.add('show');
+      // Hide after 6 seconds (optional). Remove if you want it to stay.
+      setTimeout(() => el.classList.remove('show'), 6000);
+    }
+
+    // API: POCKET MONEY
     async function addPocketMoney() {
       const type = document.getElementById('pocketType').value; // OPENING or TOPUP
       const amount = Number(document.getElementById('pocketAmount').value);
@@ -597,7 +605,6 @@
           loadToday();
         } else {
           showAlert(result.error || "Error saving pocket money", "error");
-          // If opening blocked, auto-switch to TOPUP to help user
           if ((result.error || "").toLowerCase().includes("opening")) {
             document.getElementById('pocketType').value = "TOPUP";
           }
@@ -607,14 +614,16 @@
       }
     }
 
-    // ============================
     // API: SUBMIT EXPENSES (BULK)
-    // ============================
     async function submitAll() {
       if (pendingExpenses.length === 0) {
         showAlert("No expenses to submit", "error");
         return;
       }
+
+      // clear old message
+      document.getElementById('submitMessage').classList.remove('show');
+      document.getElementById('submitMessage').textContent = "";
 
       const formData = new URLSearchParams();
       formData.append("action", "bulkAdd");
@@ -626,7 +635,9 @@
         const result = await res.json();
 
         if (result.success) {
-          showAlert(`Submitted ${result.count || pendingExpenses.length} expense(s)`, "success");
+          const count = result.count || pendingExpenses.length;
+          showSubmitMessage(`Submitted successfully: ${count} expense(s) saved.`);
+
           pendingExpenses = [];
           renderExpenseList();
           loadToday();
@@ -638,9 +649,7 @@
       }
     }
 
-    // ============================
     // API: LOAD TODAY
-    // ============================
     async function loadToday() {
       try {
         const res = await fetch(SCRIPT_URL, {
@@ -675,7 +684,6 @@
         return;
       }
 
-      // Most recent first
       const sorted = [...items].sort((a, b) => (a.time < b.time ? 1 : -1));
 
       el.innerHTML = sorted.map(t => {
@@ -696,9 +704,7 @@
       }).join('');
     }
 
-    // ============================
     // API: CATEGORIES
-    // ============================
     async function loadCategories() {
       try {
         const res = await fetch(SCRIPT_URL, {
@@ -738,9 +744,7 @@
         });
     }
 
-    // ============================
     // MONTHLY REPORT
-    // ============================
     async function loadMonthlyReport() {
       const month = document.getElementById('reportMonth').value; // YYYY-MM
       if (!month) {
@@ -844,7 +848,6 @@
         return;
       }
 
-      // Newest first
       const sorted = [...items].sort((a, b) => {
         if (a.date === b.date) return (a.time < b.time ? 1 : -1);
         return a.date < b.date ? 1 : -1;
@@ -880,9 +883,7 @@
       `;
     }
 
-    // ============================
     // UI HELPERS
-    // ============================
     function showAlert(msg, type) {
       const el = document.getElementById('mainAlert');
       el.textContent = msg;
