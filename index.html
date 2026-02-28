@@ -214,68 +214,45 @@
         </div>
 
         <!-- Expense Form -->
-        <!-- Expense Form -->
-<div id="expenseTab" class="card">
-    <h3>Record Expense</h3>
+        <div id="expenseTab" class="card">
+            <h3>Record Expense</h3>
 
-    <label style="font-size:0.85rem; color:#555;">Expense Category</label>
-    <select id="expenseCategory">
-        <option value="">-- Select Category --</option>
-    </select>
+            <label style="font-size:0.85rem; color:#555;">Expense Category</label>
+            <select id="expenseCategory">
+                <option value="">-- Select Category --</option>
+            </select>
 
-    <label style="font-size:0.85rem; color:#555;">Amount (TZS)</label>
-    <input type="number" id="expenseAmount" placeholder="Enter amount">
+            <label style="font-size:0.85rem; color:#555;">Amount (TZS)</label>
+            <input type="number" id="expenseAmount" placeholder="Enter amount">
 
-    <label style="font-size:0.85rem; color:#555;">Additional Comments</label>
-    <input type="text" id="expenseComment" placeholder="Optional notes">
+            <label style="font-size:0.85rem; color:#555;">Additional Comments</label>
+            <input type="text" id="expenseComment" placeholder="Optional notes">
 
-    <select id="expenseSource">
-        <option value="POCKET">From Pocket</option>
-        <option value="SALES">From Sales</option>
-    </select>
+            <select id="expenseSource">
+                <option value="POCKET">From Pocket</option>
+                <option value="SALES">From Sales</option>
+            </select>
 
-    <button class="secondary-btn" onclick="addToList()">Add to List</button>
+            <button class="secondary-btn" onclick="addToList()">Add to List</button>
 
-    <hr style="margin:20px 0;">
+            <hr style="margin:20px 0;">
 
-    <h4>Pending Expenses</h4>
+            <h4>Pending Expenses</h4>
 
-    <table width="100%" style="margin-bottom:15px;">
-        <thead>
-            <tr style="text-align:left; font-size:0.85rem;">
-                <th>Category</th>
-                <th>Amount</th>
-                <th>Source</th>
-                <th>Remove</th>
-            </tr>
-        </thead>
-        <tbody id="expenseList"></tbody>
-    </table>
+            <table width="100%" style="margin-bottom:15px;">
+                <thead>
+                    <tr style="text-align:left; font-size:0.85rem;">
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Source</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody id="expenseList"></tbody>
+            </table>
 
-    <button class="primary-btn" onclick="submitAll()">Submit All</button>
-</div>
-    <!-- Category -->
-    <label style="font-size:0.85rem; color:#555;">Expense Category</label>
-    <select id="expenseCategory">
-    <option value="">-- Select Category --</option>
-</select>
-
-    <!-- Amount -->
-    <label style="font-size:0.85rem; color:#555;">Amount (TZS)</label>
-    <input type="number" id="expenseAmount" placeholder="Enter amount">
-
-    <!-- Comments -->
-    <label style="font-size:0.85rem; color:#555;">Additional Comments</label>
-    <input type="text" id="expenseComment" placeholder="Optional notes">
-
-    <!-- Source -->
-    <select id="expenseSource">
-        <option value="POCKET">From Pocket</option>
-        <option value="SALES">From Sales</option>
-    </select>
-
-    <button class="primary-btn" onclick="addExpense()">Save Expense</button>
-</div>
+            <button class="primary-btn" onclick="submitAll()">Submit All</button>
+        </div>
 
         <!-- Pocket Form -->
         <div id="pocketTab" class="card hidden">
@@ -303,24 +280,24 @@ const USERS = {
 };
 
 let currentUser = null;
+let pendingExpenses = [];
 
 function login() {
-    const u = username.value;
-    const p = password.value;
+    const u = document.getElementById('username').value;
+    const p = document.getElementById('password').value;
     const user = USERS[u];
 
     if (user && user.password === p) {
         currentUser = { username: u, name: user.name };
-        loginScreen.classList.add("hidden");
-        mainScreen.classList.remove("hidden");
-        userDisplay.textContent = user.name + " (" + user.role + ")";
+        document.getElementById('loginScreen').classList.add("hidden");
+        document.getElementById('mainScreen').classList.remove("hidden");
+        document.getElementById('userDisplay').textContent = user.name + " (" + user.role + ")";
         loadToday();
         loadCategories();
     } else {
-        loginAlert.textContent = "Invalid login";
-        loginAlert.classList.add("show","error");
+        document.getElementById('loginAlert').textContent = "Invalid login";
+        document.getElementById('loginAlert').classList.add("show","error");
     }
-    
 }
 
 function logout() {
@@ -328,26 +305,24 @@ function logout() {
 }
 
 function showExpense() {
-    expenseTab.classList.remove("hidden");
-    pocketTab.classList.add("hidden");
+    document.getElementById('expenseTab').classList.remove("hidden");
+    document.getElementById('pocketTab').classList.add("hidden");
     document.querySelectorAll(".tab")[0].classList.add("active");
     document.querySelectorAll(".tab")[1].classList.remove("active");
 }
 
 function showPocket() {
-    expenseTab.classList.add("hidden");
-    pocketTab.classList.remove("hidden");
+    document.getElementById('expenseTab').classList.add("hidden");
+    document.getElementById('pocketTab').classList.remove("hidden");
     document.querySelectorAll(".tab")[1].classList.add("active");
     document.querySelectorAll(".tab")[0].classList.remove("active");
 }
-let pendingExpenses = [];
 
 function addToList(){
-
-    const category = expenseCategory.value;
-    const amount = expenseAmount.value;
-    const source = expenseSource.value;
-    const comment = expenseComment.value;
+    const category = document.getElementById('expenseCategory').value;
+    const amount = document.getElementById('expenseAmount').value;
+    const source = document.getElementById('expenseSource').value;
+    const comment = document.getElementById('expenseComment').value;
 
     if(!category || !amount){
         showAlert("Select category and enter amount","error");
@@ -365,14 +340,14 @@ function addToList(){
 
     renderExpenseList();
 
-    expenseCategory.value="";
-    expenseAmount.value="";
-    expenseComment.value="";
+    document.getElementById('expenseCategory').value="";
+    document.getElementById('expenseAmount').value="";
+    document.getElementById('expenseComment').value="";
 }
 
 function renderExpenseList(){
-
     let html = "";
+    const expenseList = document.getElementById('expenseList');
 
     pendingExpenses.forEach((e,index)=>{
         html += `
@@ -392,52 +367,9 @@ function removeExpense(index){
     pendingExpenses.splice(index,1);
     renderExpenseList();
 }
-async function addExpense() {
 
-    const category = document.getElementById("expenseCategory").value;
-    const comment = document.getElementById("expenseComment").value;
-    const source = document.getElementById("expenseSource").value;
-    const amount = document.getElementById("expenseAmount").value;
-
-    if (!category || !amount) {
-        showAlert("Select category and enter amount","error");
-        return;
-    }
-
-    const formData = new URLSearchParams();
-    formData.append("action","add");
-    formData.append("type","EXPENSE");
-    formData.append("category",category);
-    formData.append("description",comment || category);
-    formData.append("source",source);
-    formData.append("amount",amount);
-    formData.append("cashier",currentUser.name);
-
-    try {
-        const res = await fetch(SCRIPT_URL,{
-            method:"POST",
-            body:formData
-        });
-
-        const result = await res.json();
-
-        if(result.success){
-            showAlert("Expense Saved","success");
-            document.getElementById("expenseCategory").value="";
-            document.getElementById("expenseComment").value="";
-            document.getElementById("expenseAmount").value="";
-            loadToday();
-        } else {
-            showAlert("Error saving","error");
-        }
-
-    } catch(err){
-        showAlert("Network error","error");
-    }
-}
 async function addPocketMoney(){
-
-    const amount = pocketAmount.value;
+    const amount = document.getElementById('pocketAmount').value;
 
     if(!amount){
         showAlert("Enter amount","error");
@@ -460,7 +392,7 @@ async function addPocketMoney(){
 
         if(result.success){
             showAlert("Money Added","success");
-            pocketAmount.value="";
+            document.getElementById('pocketAmount').value="";
             loadToday();
         } else {
             showAlert("Error saving","error");
@@ -472,7 +404,6 @@ async function addPocketMoney(){
 }
 
 async function loadToday(){
-
     try{
         const res = await fetch(SCRIPT_URL,{
             method:"POST",
@@ -482,11 +413,11 @@ async function loadToday(){
         const result = await res.json();
 
         if(result.success){
-
-            pocketBalance.textContent = "TZS " + (result.summary.pocketBalance || 0);
-            salesUsed.textContent = "TZS " + (result.summary.salesUsed || 0);
+            document.getElementById('pocketBalance').textContent = "TZS " + (result.summary.pocketBalance || 0);
+            document.getElementById('salesUsed').textContent = "TZS " + (result.summary.salesUsed || 0);
 
             let html="";
+            const transactions = document.getElementById('transactions');
 
             (result.transactions || []).forEach(t=>{
                 html += `
@@ -509,12 +440,13 @@ async function loadToday(){
 }
 
 function showAlert(msg,type){
-    mainAlert.textContent=msg;
-    mainAlert.className="alert show "+type;
+    const mainAlert = document.getElementById('mainAlert');
+    mainAlert.textContent = msg;
+    mainAlert.className = "alert show " + type;
     setTimeout(()=>mainAlert.classList.remove("show"),3000);
 }
-async function loadCategories() {
 
+async function loadCategories() {
     try {
         const res = await fetch(SCRIPT_URL, {
             method: "POST",
@@ -540,8 +472,8 @@ async function loadCategories() {
         console.log("Error loading categories");
     }
 }
-    async function submitAll(){
 
+async function submitAll(){
     if(pendingExpenses.length === 0){
         showAlert("No expenses to submit","error");
         return;
@@ -554,7 +486,6 @@ async function loadCategories() {
     formData.append("cashier", currentUser.name);
 
     try{
-
         const res = await fetch(SCRIPT_URL,{
             method:"POST",
             body:formData
