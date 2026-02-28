@@ -581,6 +581,7 @@
   </div>
 
   <script>
+    // ========== CONFIGURATION ==========
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF9cqcuA6G_mHh4yVisv2-5eNyx2GwhNaLqEk444yizaCdWPsfdtQ4LEO6a40BelVH/exec';
     const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
@@ -597,22 +598,45 @@
       month: { data: null, timestamp: 0 }
     };
 
+    // Global variables
     let currentUser = null;
     let pendingExpenses = [];
     let allCategories = [];
     let isSubmitting = false;
 
-    // ========== LOADING & UI STATE ==========
-    function showLoading(message = 'Loading...') {
-      document.getElementById('loadingMessage').textContent = message;
-      document.getElementById('loadingOverlay').classList.add('show');
-    }
+    // ========== INITIALIZATION ==========
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM loaded, initializing app...');
+      
+      // Set up initial UI state
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('mainScreen').classList.add('hidden');
 
-    function hideLoading() {
-      document.getElementById('loadingOverlay').classList.remove('show');
-    }
+      // Set default month
+      const d = new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      document.getElementById('reportMonth').value = `${yyyy}-${mm}`;
 
-    // Online/offline detection
+      // Add enter key handler for login
+      document.getElementById('password').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          login();
+        }
+      });
+
+      // Check online status
+      updateOnlineStatus();
+      
+      // Set up periodic refresh (every 5 minutes)
+      setInterval(function() {
+        if (currentUser && navigator.onLine) {
+          loadToday(true);
+        }
+      }, CACHE_DURATION);
+    });
+
+    // ========== ONLINE/OFFLINE DETECTION ==========
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
 
@@ -624,6 +648,16 @@
       } else {
         indicator.classList.add('show');
       }
+    }
+
+    // ========== LOADING UI ==========
+    function showLoading(message = 'Loading...') {
+      document.getElementById('loadingMessage').textContent = message;
+      document.getElementById('loadingOverlay').classList.add('show');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('show');
     }
 
     // ========== CACHE MANAGEMENT ==========
@@ -702,9 +736,14 @@
     }
 
     // ========== AUTHENTICATION ==========
-    async function login() {
+    window.login = async function() {
       const u = document.getElementById('username').value.trim();
       const p = document.getElementById('password').value;
+
+      if (!u || !p) {
+        showInlineAlert('loginAlert', 'Please enter username and password', 'error');
+        return;
+      }
 
       showLoading('Logging in...');
       
@@ -732,13 +771,25 @@
       }
       
       hideLoading();
-    }
+    };
 
-    function logout() {
+    window.logout = function() {
       location.reload();
-    }
+    };
 
     // ========== TAB MANAGEMENT ==========
+    window.showExpense = function() {
+      setActiveTab('expenseTab');
+    };
+
+    window.showPocket = function() {
+      setActiveTab('pocketTab');
+    };
+
+    window.showReports = function() {
+      setActiveTab('reportsTab');
+    };
+
     function setActiveTab(tabPanelId) {
       const tabs = [
         { btn: 'tabExpense', panel: 'expenseTab' },
@@ -752,18 +803,14 @@
       });
     }
 
-    function showExpense() { setActiveTab('expenseTab'); }
-    function showPocket() { setActiveTab('pocketTab'); }
-    function showReports() { setActiveTab('reportsTab'); }
-
     // ========== QUICK ACTIONS ==========
-    function quickAmount(amount) {
+    window.quickAmount = function(amount) {
       document.getElementById('expenseAmount').value = amount;
-    }
+    };
 
-    function clearAmount() {
+    window.clearAmount = function() {
       document.getElementById('expenseAmount').value = '';
-    }
+    };
 
     // ========== CATEGORY MANAGEMENT ==========
     async function loadCategories(forceRefresh = false) {
@@ -802,32 +849,16 @@
       });
     }
 
-    // Debounced search
-    function debounce(func, wait) {
-      let timeout;
-      return function executedFunction(...args) {
-        const later = () => {
-          clearTimeout(timeout);
-          func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-      };
-    }
-
-    function filterCategories() {
+    window.filterCategories = function() {
       const searchTerm = document.getElementById('categorySearch').value.toLowerCase();
       const filtered = allCategories.filter(cat => 
         cat.toLowerCase().includes(searchTerm)
       );
       renderCategoryOptions(filtered);
-    }
-
-    const debouncedFilter = debounce(filterCategories, 300);
-    document.getElementById('categorySearch').addEventListener('input', debouncedFilter);
+    };
 
     // ========== PENDING EXPENSES ==========
-    function addToList() {
+    window.addToList = function() {
       const category = document.getElementById('expenseCategory').value;
       const amount = Number(document.getElementById('expenseAmount').value);
       const source = document.getElementById('expenseSource').value;
@@ -850,7 +881,7 @@
       document.getElementById('expenseCategory').value = "";
       document.getElementById('expenseAmount').value = "";
       document.getElementById('expenseComment').value = "";
-    }
+    };
 
     function renderExpenseList() {
       const tbody = document.getElementById('expenseList');
@@ -874,13 +905,13 @@
       `).join('');
     }
 
-    function removeExpense(index) {
+    window.removeExpense = function(index) {
       pendingExpenses.splice(index, 1);
       renderExpenseList();
-    }
+    };
 
     // ========== SUBMIT EXPENSES ==========
-    async function submitAll() {
+    window.submitAll = async function() {
       if (isSubmitting) return;
       if (pendingExpenses.length === 0) {
         showAlert("No expenses to submit", "error");
@@ -917,10 +948,17 @@
         isSubmitting = false;
         hideLoading();
       }
+    };
+
+    function showSubmitMessage(text) {
+      const el = document.getElementById('submitMessage');
+      el.textContent = text;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 6000);
     }
 
     // ========== POCKET MONEY ==========
-    async function addPocketMoney() {
+    window.addPocketMoney = async function() {
       const type = document.getElementById('pocketType').value;
       const amount = Number(document.getElementById('pocketAmount').value);
 
@@ -962,7 +1000,7 @@
       } finally {
         hideLoading();
       }
-    }
+    };
 
     // ========== TODAY'S DATA ==========
     async function loadToday(forceRefresh = false) {
@@ -988,6 +1026,21 @@
         }
       }
     }
+
+    window.refreshData = async function() {
+      showLoading('Refreshing all data...');
+      try {
+        await Promise.all([
+          loadToday(true),
+          loadCategories(true)
+        ]);
+        showAlert('Data refreshed', 'success');
+      } catch (err) {
+        showAlert('Error refreshing data', 'error');
+      } finally {
+        hideLoading();
+      }
+    };
 
     function renderTransactions(items) {
       const el = document.getElementById('transactions');
@@ -1025,57 +1078,11 @@
     }
 
     // ========== MONTHLY REPORT ==========
-    async function loadMonthlyReport() {
+    window.loadMonthlyReport = async function() {
       const month = document.getElementById('reportMonth').value;
       if (!month) {
         showInlineAlert('reportAlert', 'Select a month', 'error');
         return;
       }
 
-      showLoading('Loading report...');
-      
-      try {
-        const result = await fetchWithCache('month', { month }, false);
-
-        if (!result?.success) {
-          showInlineAlert('reportAlert', result?.error || 'Failed to load report', 'error');
-          return;
-        }
-
-        clearAlert('reportAlert');
-
-        const s = result.summary || {};
-        document.getElementById('mPocketAdded').textContent = "TZS " + formatNumber(s.pocketAdded || 0);
-        document.getElementById('mPocketSpent').textContent = "TZS " + formatNumber(s.pocketSpent || 0);
-        document.getElementById('mSalesUsed').textContent = "TZS " + formatNumber(s.salesUsed || 0);
-        document.getElementById('mPocketBalance').textContent = "TZS " + formatNumber(s.pocketBalance || 0);
-
-        renderByCategory(result.byCategory || []);
-        renderByDay(result.byDay || []);
-        renderMonthTransactions(result.transactions || []);
-
-      } catch (err) {
-        showInlineAlert('reportAlert', 'Network error', 'error');
-      } finally {
-        hideLoading();
-      }
-    }
-
-    function renderByCategory(items) {
-      const el = document.getElementById('byCategory');
-      if (!items || items.length === 0) {
-        el.innerHTML = `<div class="subtle">No expense data for this month.</div>`;
-        return;
-      }
-
-      el.innerHTML = `
-        <table>
-          <thead>
-            <tr><th>Category</th><th>Total</th></tr>
-          </thead>
-          <tbody>
-            ${items.map(x => `
-              <tr>
-                <td>${escapeHtml(x.category || 'Uncategorized')}</td>
-                <td><strong>TZS ${formatNumber(x.total || 0)}</strong></td>
-              </tr
+     
