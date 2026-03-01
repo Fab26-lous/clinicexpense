@@ -525,25 +525,32 @@
     }
 
     // ================== AUTH ==================
-    window.login = async function() {
-      const u = document.getElementById('username').value.trim();
-      const p = document.getElementById('password').value;
+   // ================== AUTH ==================
+window.login = async function() {
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value;
 
-      const user = USERS[u];
-      if (user && user.password === p) {
-        currentUser = { username: u, name: u, role: user.role };
+  console.log('Login attempt:', u); // For debugging
 
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('mainScreen').classList.remove('hidden');
-        document.getElementById('userDisplay').textContent = `${u} (${user.role})`;
+  // Check hardcoded users
+  if (u === 'cashier' && p === 'clinic123') {
+    currentUser = { username: u, name: u, role: 'Cashier' };
+  } else if (u === 'admin' && p === 'admin123') {
+    currentUser = { username: u, name: u, role: 'Admin' };
+  } else {
+    showAlert('Invalid username or password', 'error', 'login');
+    return;
+  }
 
-        showExpense();
-        await refreshTodayFromServer();
-        await loadPendingDeposits();
-      } else {
-        showAlert('Invalid username or password', 'error', 'login');
-      }
-    };
+  // Login successful
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('mainScreen').classList.remove('hidden');
+  document.getElementById('userDisplay').textContent = `${u} (${currentUser.role})`;
+
+  showExpense();
+  await refreshTodayFromServer();
+  await loadPendingDeposits();
+};
 
     window.logout = function() {
       location.reload();
