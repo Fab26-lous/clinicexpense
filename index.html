@@ -97,10 +97,7 @@
     .secondary-btn { background: #e9edf3; color: #1e3a5f; }
     .secondary-btn:hover { filter: brightness(0.98); }
 
-    .danger-btn { background: #fdecea; color: #b02a37; }
-
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 
     .stat-box {
       background: #f8fafc;
@@ -219,9 +216,7 @@
       border-radius: 10px;
       margin-bottom: 8px;
       border-left: 4px solid #f59e0b;
-      border-top: 1px solid #e6e9ef;
-      border-right: 1px solid #e6e9ef;
-      border-bottom: 1px solid #e6e9ef;
+      border: 1px solid #e6e9ef;
     }
 
     .expense-item {
@@ -288,7 +283,7 @@
 
     @media (max-width: 640px) {
       body { padding: 14px; }
-      .row, .row-3 { grid-template-columns: 1fr; }
+      .row { grid-template-columns: 1fr; }
       .tabs { flex-direction: column; }
       .reason-item { flex-wrap: wrap; }
       .reason-item input[type="number"] { width: 100%; }
@@ -474,7 +469,10 @@
             <div class="office-cash-box">
               <div class="stat-label">Cash in Office (Available for Bank)</div>
               <div class="office-cash-amount" id="officeCash">TZS 0</div>
-              <div class="subtle">Formula: Actual Cash − Pocket Top-ups (TOPUP only)</div>
+              <div class="subtle">
+                Base: Cash Counted − (Sales Pocket Top-ups) − (Sales Expenses).<br>
+                After deposits: remaining is reduced by bank deposits.
+              </div>
             </div>
           </div>
 
@@ -528,7 +526,7 @@
               <input type="number" id="depositAmount" min="0" step="1000" inputmode="numeric" oninput="calculateDepositOfficeCash()">
             </div>
             <div>
-              <label>Director Cash Given</label>
+              <label>Director Cash Given (Optional)</label>
               <input type="number" id="depositDirectorCash" min="0" step="1000" inputmode="numeric" oninput="calculateDepositOfficeCash()">
             </div>
           </div>
@@ -588,6 +586,8 @@
     let cashReasons = [];
     let initialCashDiff = 0;
 
+    let officeCashDebounceTimer = null;
+
     // ================== UX HELPERS ==================
     function setOverlay(show, title = 'Please wait…', msg = 'Processing') {
       const o = document.getElementById('loadingOverlay');
@@ -604,10 +604,22 @@
       btn.textContent = loading ? textWhenLoading : btn.dataset.originalText;
     }
 
+    function setInlineLoading(elId, on, text='Loading…') {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      if (on) {
+        el.dataset.prev = el.innerHTML;
+        el.innerHTML = `<div class="subtle">${text}</div>`;
+      } else if (el.dataset.prev !== undefined) {
+        el.innerHTML = el.dataset.prev;
+        delete el.dataset.prev;
+      }
+    }
+
     // ================== INIT ==================
     document.addEventListener('DOMContentLoaded', async function() {
       setTodayDefaults();
-      await loadCategories(); // safe to load before login
+      await loadCategories();
     });
 
     function setTodayDefaults() {
@@ -767,7 +779,6 @@
           select.appendChild(option);
         });
       } catch (e) {
-        // fallback if API is not reachable
         const cats = ['Ambulance', 'Eye', 'Physiotherapy', 'USS', 'Nauli', 'Ufundi', 'Mengineyo', 'CBGY', 'Lipa Number', 'WAGOWA'];
         cats.forEach(cat => {
           const option = document.createElement('option');
@@ -781,8 +792,15 @@
     // ================== TODAY REFRESH ==================
     async function refreshTodayFromServer(withOverlay=false) {
       if (!currentUser) return;
+
+      setInlineLoading('expenseList', true, 'Loading submitted expenses…');
+      setInlineLoading('pocketHistory', true, 'Loading pocket history…');
+
       try {
-        const data = await apiCall('today', {}, withOverlay ? { overlay:true, title:'Refreshing…', msg:'Loading today’s data' } : { overlay:false });
+        const data = await apiCall('today', {}, withOverlay
+          ? { overlay:true, title:'Refreshing…', msg:'Loading today’s data' }
+          : { overlay:false }
+        );
 
         const tx = data.transactions || [];
 
@@ -794,7 +812,7 @@
           date: data.date
         }));
 
-        // TOPUP + OPENING shown as pocket incoming
+        // TOPUP is sales top-up (category Topup); Director is also TOPUP but category Director.
         pocketTransactions = tx
           .filter(t => t.type === 'TOPUP' || t.type === 'OPENING')
           .map(t => ({
@@ -812,8 +830,16 @@
         updatePocketDisplay();
         updatePocketHistory();
 
+        // update cash in office if cash tab visible
+        if (!document.getElementById('cashReportTab').classList.contains('hidden')) {
+          calculateOfficeCash();
+        }
+
       } catch (e) {
         showAlert(e.message, 'error');
+      } finally {
+        setInlineLoading('expenseList', false);
+        setInlineLoading('pocketHistory', false);
       }
     }
 
@@ -844,7 +870,6 @@
 
       renderPendingExpenses();
 
-      // Clear form + focus for speed
       document.getElementById('expenseCategory').value = '';
       document.getElementById('expenseAmount').value = '';
       document.getElementById('expenseComment').value = '';
@@ -894,8 +919,7 @@
       if (!currentUser) { showAlert('Please login', 'error'); return; }
       if (pendingExpenses.length === 0) { showAlert('No pending expenses to submit', 'warning'); return; }
 
-      // prevent double submit
-      document.getElementById('submitAllBtn').disabled = true;
+      setBtnLoading('submitAllBtn', true, 'Submitting…');
 
       try {
         const payload = {
@@ -903,7 +927,11 @@
           cashier: currentUser?.name || 'Unknown'
         };
 
-        const result = await apiCall('bulkAdd', payload, { overlay:true, title:'Submitting…', msg:`Sending ${pendingExpenses.length} expenses to Google Sheet` });
+        const result = await apiCall('bulkAdd', payload, {
+          overlay:true,
+          title:'Submitting…',
+          msg:`Sending ${pendingExpenses.length} expenses to Google Sheet`
+        });
 
         showAlert(`Submitted ${result.count || pendingExpenses.length} expenses successfully`, 'success');
 
@@ -911,10 +939,11 @@
         renderPendingExpenses();
 
         await refreshTodayFromServer(true);
+
       } catch (e) {
         showAlert(e.message, 'error');
-        // re-enable button if still has data
-        document.getElementById('submitAllBtn').disabled = pendingExpenses.length === 0;
+      } finally {
+        setBtnLoading('submitAllBtn', false);
       }
     };
 
@@ -943,7 +972,6 @@
 
     // ================== POCKET MONEY ==================
     window.addPocketTransaction = async function() {
-      const date = document.getElementById('pocketDate').value;
       const type = document.getElementById('pocketType').value;
       const amount = Number(document.getElementById('pocketAmount').value);
       const notes = document.getElementById('pocketNotes').value.trim();
@@ -1003,6 +1031,54 @@
           <div style="font-weight:900; color:#10b981; white-space:nowrap;">+ TZS ${formatNumber(t.amount)}</div>
         </div>
       `).join('');
+    }
+
+    // ================== CASH IN OFFICE (CORRECT RULE) ==================
+    function computeOfficeCashBase_(dateStr) {
+      const actualCash = Number(document.getElementById('actualCash').value) || 0;
+
+      // Sales pocket topups are TOPUP (not Director in our mapping)
+      const pocketTopupsFromSales = pocketTransactions
+        .filter(t => t.date === dateStr && t.type === 'TOPUP')
+        .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+
+      // Expenses paid from SALES
+      const salesExpenses = expenses
+        .filter(e => e.date === dateStr && String(e.source || '').toUpperCase() === 'SALES')
+        .reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+      const base = actualCash - pocketTopupsFromSales - salesExpenses;
+      return Math.max(0, base);
+    }
+
+    function calculateOfficeCash() {
+      const date = document.getElementById('reportDate').value;
+      const base = computeOfficeCashBase_(date);
+
+      // show base quickly
+      document.getElementById('officeCash').textContent = 'TZS ' + formatNumber(base);
+
+      if (!currentUser) return base;
+
+      clearTimeout(officeCashDebounceTimer);
+      officeCashDebounceTimer = setTimeout(async () => {
+        try {
+          // if there is a pending record, it already reflects reductions by bank deposits
+          const data = await apiCall('pendingForDate', { originalDate: date }, { overlay:false });
+
+          if (data && data.found) {
+            document.getElementById('officeCash').textContent =
+              'TZS ' + formatNumber(Math.max(0, Number(data.amount) || 0));
+          } else {
+            document.getElementById('officeCash').textContent = 'TZS ' + formatNumber(base);
+          }
+        } catch (e) {
+          // silent fallback
+          document.getElementById('officeCash').textContent = 'TZS ' + formatNumber(base);
+        }
+      }, 300);
+
+      return base;
     }
 
     // ================== CASH REPORT ==================
@@ -1110,19 +1186,6 @@
       checkCashReportSubmit();
     }
 
-    function calculateOfficeCash() {
-      const actualCash = Number(document.getElementById('actualCash').value) || 0;
-      const today = document.getElementById('reportDate').value;
-
-      const pocketTopups = pocketTransactions
-        .filter(t => t.date === today && t.type === 'TOPUP')
-        .reduce((sum, t) => sum + (t.amount || 0), 0);
-
-      const officeCash = actualCash - pocketTopups;
-      document.getElementById('officeCash').textContent = 'TZS ' + formatNumber(Math.max(0, officeCash));
-      return officeCash;
-    }
-
     function checkCashReportSubmit() {
       const submitBtn = document.getElementById('submitCashReportBtn');
 
@@ -1156,21 +1219,23 @@
       setBtnLoading('submitCashReportBtn', true, 'Saving…');
 
       try {
-        const officeCash = calculateOfficeCash();
         const date = document.getElementById('reportDate').value;
+
+        // IMPORTANT: Save BASE office cash at time of reporting (before any deposits)
+        const officeCashBase = computeOfficeCashBase_(date);
+        document.getElementById('officeCash').textContent = 'TZS ' + formatNumber(officeCashBase);
 
         await apiCall('saveCashReport', {
           date,
           systemSales: String(Number(document.getElementById('systemSales').value) || 0),
           actualCash: String(Number(document.getElementById('actualCash').value) || 0),
           cashReasons: JSON.stringify(cashReasons),
-          officeCash: String(officeCash),
+          officeCash: String(officeCashBase),
           cashier: currentUser?.name || 'Unknown'
         }, { overlay:true, title:'Saving…', msg:'Recording cash report' });
 
         showAlert('Cash report saved', 'success');
 
-        // Clear
         document.getElementById('systemSales').value = '';
         document.getElementById('actualCash').value = '';
         document.getElementById('cashDifferenceTracker').classList.add('hidden');
@@ -1198,17 +1263,26 @@
       document.getElementById('cashDifferenceTracker').classList.add('hidden');
       initialCashDiff = 0;
       document.getElementById('initialDifference').textContent = 'TZS 0';
+      document.getElementById('officeCash').textContent = 'TZS 0';
       checkCashReportSubmit();
     };
 
     // ================== PENDING DEPOSITS ==================
     async function loadPendingDeposits(withOverlay=false) {
       if (!currentUser) return;
+
+      setInlineLoading('pendingDepositsList', true, 'Loading pending deposits…');
+
       try {
-        const data = await apiCall('getPendingDeposits', {}, withOverlay ? { overlay:true, title:'Loading…', msg:'Fetching pending deposits' } : { overlay:false });
+        const data = await apiCall('getPendingDeposits', {}, withOverlay
+          ? { overlay:true, title:'Loading…', msg:'Fetching pending deposits' }
+          : { overlay:false }
+        );
         pendingDeposits = data.pending || [];
       } catch (e) {
         pendingDeposits = [];
+      } finally {
+        setInlineLoading('pendingDepositsList', false);
       }
     }
 
@@ -1309,6 +1383,7 @@
 
         await loadPendingDeposits(true);
         updatePendingDepositsList();
+
       } catch (e) {
         showAlert(e.message, 'error');
       } finally {
