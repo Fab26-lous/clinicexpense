@@ -204,6 +204,43 @@
       border-left: 4px solid #f59e0b;
     }
 
+    .expense-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #f8fafc;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border: 1px solid #e6e9ef;
+    }
+
+    .expense-details {
+      flex: 1;
+    }
+
+    .expense-amount {
+      font-weight: 700;
+      color: #1e3a5f;
+      margin: 0 15px;
+    }
+
+    .remove-expense {
+      background: #fdecea;
+      color: #b02a37;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .submit-all-btn {
+      background: #10b981;
+      color: white;
+      margin-top: 15px;
+    }
+    .submit-all-btn:hover { opacity: 0.9; }
+
     .subtle { font-size: 0.85rem; color: #6c757d; margin-top: 8px; }
 
     @media (max-width: 640px) {
@@ -277,13 +314,24 @@
         <label>Description</label>
         <input type="text" id="expenseComment" placeholder="e.g., Ambulance, Eye, Physiotherapy">
 
-        <button class="secondary-btn" onclick="addExpense()" style="width: 100%;">Add Expense</button>
+        <!-- Add to List Button -->
+        <button class="secondary-btn" onclick="addToPendingExpenses()" style="width: 100%; margin-bottom: 10px;">➕ Add to List</button>
+
+        <!-- Pending Expenses List -->
+        <div id="pendingExpensesContainer" style="margin-top: 20px;">
+          <h4>Pending Expenses <span id="pendingCount" style="background: #1e3a5f; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; margin-left: 10px;">0</span></h4>
+          <div id="pendingExpensesList"></div>
+          <div class="subtle" id="pendingExpensesHint">No expenses added to list yet</div>
+          
+          <!-- Submit All Button -->
+          <button class="primary-btn submit-all-btn" onclick="submitAllExpenses()" id="submitAllBtn" style="margin-top: 15px;" disabled>📤 Submit All Expenses</button>
+        </div>
 
         <div class="divider"></div>
 
-        <h4>Today's Expenses</h4>
+        <h4>Today's Submitted Expenses</h4>
         <div id="expenseList"></div>
-        <div class="subtle" id="expenseHint">No expenses yet</div>
+        <div class="subtle" id="expenseHint">No submitted expenses yet</div>
       </div>
 
       <!-- ========== SECTION 2: POCKET MONEY ========== -->
@@ -466,8 +514,9 @@
 
     let currentUser = null;
 
-    // local UI cache (we still store to Sheets)
+    // local UI cache
     let expenses = [];
+    let pendingExpenses = []; // New array for pending expenses
     let pocketTransactions = [];
     let cashReports = [];
     let bankDeposits = [];
@@ -480,9 +529,9 @@
     // ================== INIT ==================
     document.addEventListener('DOMContentLoaded', async function() {
       setTodayDefaults();
-      await loadCategories();              // from sheet
-      await refreshTodayFromServer();      // pocket balance + today tx
-      await loadPendingDeposits();         // from sheet
+      await loadCategories();
+      await refreshTodayFromServer();
+      await loadPendingDeposits();
     });
 
     function setTodayDefaults() {
@@ -525,32 +574,29 @@
     }
 
     // ================== AUTH ==================
-   // ================== AUTH ==================
-window.login = async function() {
-  const u = document.getElementById('username').value.trim();
-  const p = document.getElementById('password').value;
+    window.login = async function() {
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value;
 
-  console.log('Login attempt:', u); // For debugging
+      console.log('Login attempt:', u);
 
-  // Check hardcoded users
-  if (u === 'cashier' && p === 'clinic123') {
-    currentUser = { username: u, name: u, role: 'Cashier' };
-  } else if (u === 'admin' && p === 'admin123') {
-    currentUser = { username: u, name: u, role: 'Admin' };
-  } else {
-    showAlert('Invalid username or password', 'error', 'login');
-    return;
-  }
+      if (u === 'cashier' && p === 'clinic123') {
+        currentUser = { username: u, name: u, role: 'Cashier' };
+      } else if (u === 'admin' && p === 'admin123') {
+        currentUser = { username: u, name: u, role: 'Admin' };
+      } else {
+        showAlert('Invalid username or password', 'error', 'login');
+        return;
+      }
 
-  // Login successful
-  document.getElementById('loginScreen').classList.add('hidden');
-  document.getElementById('mainScreen').classList.remove('hidden');
-  document.getElementById('userDisplay').textContent = `${u} (${currentUser.role})`;
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('mainScreen').classList.remove('hidden');
+      document.getElementById('userDisplay').textContent = `${u} (${currentUser.role})`;
 
-  showExpense();
-  await refreshTodayFromServer();
-  await loadPendingDeposits();
-};
+      showExpense();
+      await refreshTodayFromServer();
+      await loadPendingDeposits();
+    };
 
     window.logout = function() {
       location.reload();
@@ -628,7 +674,6 @@ window.login = async function() {
           select.appendChild(option);
         });
       } catch (e) {
-        // fallback (still allow UI to work)
         const cats = ['Ambulance', 'Eye', 'Physiotherapy', 'USS', 'Nauli', 'Ufundi', 'Mengineyo', 'CBGY', 'Lipa Number', 'WAGOWA'];
         cats.forEach(cat => {
           const option = document.createElement('option');
@@ -645,7 +690,6 @@ window.login = async function() {
         const data = await apiCall('today');
         const tx = data.transactions || [];
 
-        // rebuild local UI arrays from server response (today only)
         expenses = tx.filter(t => t.type === 'EXPENSE').map(t => ({
           category: t.category,
           amount: t.amount,
@@ -675,39 +719,97 @@ window.login = async function() {
       }
     }
 
-    // ================== EXPENSES ==================
-    window.addExpense = async function() {
+    // ================== PENDING EXPENSES ==================
+    window.addToPendingExpenses = function() {
       const category = document.getElementById('expenseCategory').value;
       const amount = Number(document.getElementById('expenseAmount').value);
       const source = document.getElementById('expenseSource').value;
       const desc = document.getElementById('expenseComment').value.trim();
 
       if (!category || !amount) {
-        showAlert('Please fill all fields', 'error');
+        showAlert('Please select category and enter amount', 'error');
+        return;
+      }
+
+      pendingExpenses.push({
+        category,
+        amount,
+        source,
+        description: desc || category
+      });
+
+      renderPendingExpenses();
+      
+      // Clear form
+      document.getElementById('expenseCategory').value = '';
+      document.getElementById('expenseAmount').value = '';
+      document.getElementById('expenseComment').value = '';
+      
+      showAlert('Added to pending list', 'success');
+    };
+
+    function renderPendingExpenses() {
+      const listEl = document.getElementById('pendingExpensesList');
+      const hintEl = document.getElementById('pendingExpensesHint');
+      const countEl = document.getElementById('pendingCount');
+      const submitBtn = document.getElementById('submitAllBtn');
+
+      if (pendingExpenses.length === 0) {
+        listEl.innerHTML = '';
+        hintEl.style.display = 'block';
+        countEl.textContent = '0';
+        submitBtn.disabled = true;
+        return;
+      }
+
+      hintEl.style.display = 'none';
+      countEl.textContent = pendingExpenses.length;
+      submitBtn.disabled = false;
+
+      listEl.innerHTML = pendingExpenses.map((exp, index) => `
+        <div class="expense-item">
+          <div class="expense-details">
+            <strong>${exp.category}</strong>
+            <div style="font-size: 0.8rem; color: #666;">${exp.source} - ${exp.description}</div>
+          </div>
+          <div class="expense-amount">TZS ${formatNumber(exp.amount)}</div>
+          <span class="remove-expense" onclick="removePendingExpense(${index})">✕</span>
+        </div>
+      `).join('');
+    }
+
+    window.removePendingExpense = function(index) {
+      pendingExpenses.splice(index, 1);
+      renderPendingExpenses();
+    };
+
+    window.submitAllExpenses = async function() {
+      if (pendingExpenses.length === 0) {
+        showAlert('No pending expenses to submit', 'error');
         return;
       }
 
       try {
-        await apiCall('add', {
-          type: 'EXPENSE',
-          category,
-          amount: String(amount),
-          description: desc || category,
-          source,
+        const result = await apiCall('bulkAdd', {
+          expenses: JSON.stringify(pendingExpenses),
           cashier: currentUser?.name || 'Unknown'
         });
 
-        document.getElementById('expenseCategory').value = '';
-        document.getElementById('expenseAmount').value = '';
-        document.getElementById('expenseComment').value = '';
-
-        showAlert('Expense saved to Sheet', 'success');
+        showAlert(`Successfully submitted ${result.count || pendingExpenses.length} expenses`, 'success');
+        
+        // Clear pending expenses
+        pendingExpenses = [];
+        renderPendingExpenses();
+        
+        // Refresh today's expenses
         await refreshTodayFromServer();
+        
       } catch (e) {
         showAlert(e.message, 'error');
       }
     };
 
+    // ================== EXPENSES ==================
     function renderExpenses() {
       const el = document.getElementById('expenseList');
       const hint = document.getElementById('expenseHint');
@@ -743,7 +845,6 @@ window.login = async function() {
       }
 
       try {
-        // save to Transactions as TOPUP
         await apiCall('add', {
           type: 'TOPUP',
           category: (type === 'DIRECTOR') ? 'Director' : 'Topup',
@@ -900,7 +1001,6 @@ window.login = async function() {
       const actualCash = Number(document.getElementById('actualCash').value) || 0;
       const today = document.getElementById('reportDate').value;
 
-      // Only TOPUP counts here (Director top-up is not removed from office cash unless you want it)
       const pocketTopups = pocketTransactions
         .filter(t => t.date === today && t.type === 'TOPUP')
         .reduce((sum, t) => sum + t.amount, 0);
