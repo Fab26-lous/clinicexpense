@@ -4,6 +4,8 @@
   <title>Clinic Cash Management</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -19,9 +21,10 @@
 
     .app-title {
       font-size: 1.6rem;
-      font-weight: 700;
+      font-weight: 800;
       color: #1e3a5f;
       margin-bottom: 18px;
+      letter-spacing: .2px;
     }
 
     .card {
@@ -38,15 +41,22 @@
     .card-warning { border-left: 4px solid #f59e0b; background: #fffbeb; }
 
     h3 {
-      font-size: 1.1rem;
-      margin-bottom: 14px;
-      font-weight: 700;
+      font-size: 1.12rem;
+      margin-bottom: 12px;
+      font-weight: 800;
       color: #1e3a5f;
     }
 
-    h4 { font-size: 1rem; margin: 15px 0 10px; color: #2c3e50; }
+    h4 { font-size: 1rem; margin: 14px 0 10px; color: #2c3e50; }
 
-    label { display: block; font-size: 0.85rem; color: #555; margin: 8px 0 4px; }
+    label { display: block; font-size: 0.85rem; color: #4b5563; margin: 8px 0 5px; font-weight: 700; }
+
+    .help {
+      font-size: 0.82rem;
+      color: #6b7280;
+      margin: -6px 0 10px;
+      line-height: 1.25rem;
+    }
 
     input, select, textarea {
       width: 100%;
@@ -64,7 +74,7 @@
       background: #ffffff;
     }
 
-    input[readonly] { background: #f0f3f8; font-weight: 700; }
+    input[readonly] { background: #f0f3f8; font-weight: 800; }
 
     textarea { min-height: 60px; resize: vertical; }
 
@@ -72,19 +82,22 @@
       padding: 12px 16px;
       border-radius: 10px;
       border: none;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 15px;
       cursor: pointer;
       transition: all 0.2s;
     }
 
     button:active { transform: translateY(1px); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button:disabled { opacity: 0.55; cursor: not-allowed; }
 
     .primary-btn { width: 100%; background: #1e3a5f; color: white; }
     .primary-btn:hover { opacity: .95; }
 
     .secondary-btn { background: #e9edf3; color: #1e3a5f; }
+    .secondary-btn:hover { filter: brightness(0.98); }
+
+    .danger-btn { background: #fdecea; color: #b02a37; }
 
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
@@ -97,14 +110,14 @@
       border: 1px solid #e6e9ef;
     }
 
-    .stat-label { font-size: 0.85rem; color: #6c757d; margin-bottom: 6px; }
-    .stat-value { font-size: 1.4rem; font-weight: 800; color: #1e3a5f; }
+    .stat-label { font-size: 0.85rem; color: #6c757d; margin-bottom: 6px; font-weight: 700; }
+    .stat-value { font-size: 1.5rem; font-weight: 900; color: #1e3a5f; }
 
     .tabs { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
     .tab {
-      flex: 1; min-width: 120px; padding: 12px;
+      flex: 1; min-width: 140px; padding: 12px;
       border-radius: 10px; border: 1px solid #dcdfe6;
-      background: #f5f7fa; cursor: pointer; font-weight: 800; text-align: center;
+      background: #f5f7fa; cursor: pointer; font-weight: 900; text-align: center;
     }
     .tab.active { background: #1e3a5f; color: white; border-color: #1e3a5f; }
 
@@ -113,7 +126,8 @@
       border-radius: 10px;
       margin: 0 0 12px;
       display: none;
-      font-weight: 700;
+      font-weight: 900;
+      line-height: 1.25rem;
     }
     .alert.show { display: block; }
     .alert.success { background: #e6f4ea; color: #1e7e34; }
@@ -123,15 +137,16 @@
 
     .hidden { display: none; }
 
-    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
 
     .user-pill {
       background: #f5f7fa;
       border: 1px solid #dcdfe6;
       padding: 8px 12px;
       border-radius: 999px;
-      font-weight: 800;
+      font-weight: 900;
       color: #1e3a5f;
+      white-space: nowrap;
     }
 
     .reason-item {
@@ -140,48 +155,49 @@
       align-items: center;
       background: white;
       padding: 10px;
-      border-radius: 8px;
+      border-radius: 10px;
       margin-bottom: 8px;
       border: 1px solid #e6e9ef;
     }
 
-    .reason-item input[type="number"] { width: 120px; margin-bottom: 0; }
+    .reason-item input[type="number"] { width: 140px; margin-bottom: 0; }
     .reason-item input[type="text"] { flex: 2; margin-bottom: 0; }
+    .reason-item select { margin-bottom: 0; }
 
     .remove-reason {
       background: #fdecea;
       color: #b02a37;
-      padding: 5px 10px;
-      border-radius: 5px;
+      padding: 6px 10px;
+      border-radius: 8px;
       cursor: pointer;
-      font-weight: 700;
+      font-weight: 900;
     }
 
     .remaining-diff {
-      font-size: 1.2rem;
-      font-weight: 800;
+      font-size: 1.05rem;
+      font-weight: 900;
       text-align: center;
-      padding: 15px;
-      border-radius: 8px;
+      padding: 14px;
+      border-radius: 10px;
       margin: 10px 0;
     }
 
-    .divider { height: 1px; background: #eef1f5; margin: 20px 0; }
+    .divider { height: 1px; background: #eef1f5; margin: 18px 0; }
 
     .office-cash-box {
       background: #f0f9ff;
       border: 2px solid #1e3a5f;
-      padding: 20px;
+      padding: 18px;
       border-radius: 12px;
-      margin: 20px 0;
+      margin: 16px 0 0;
       text-align: center;
     }
 
     .office-cash-amount {
       font-size: 2rem;
-      font-weight: 800;
+      font-weight: 900;
       color: #1e3a5f;
-      margin: 10px 0;
+      margin: 10px 0 6px;
     }
 
     .carry-over-box {
@@ -191,6 +207,7 @@
       border-radius: 12px;
       margin: 15px 0;
       text-align: center;
+      font-weight: 800;
     }
 
     .pending-deposit-item {
@@ -199,9 +216,12 @@
       align-items: center;
       padding: 12px;
       background: #f8fafc;
-      border-radius: 8px;
+      border-radius: 10px;
       margin-bottom: 8px;
       border-left: 4px solid #f59e0b;
+      border-top: 1px solid #e6e9ef;
+      border-right: 1px solid #e6e9ef;
+      border-bottom: 1px solid #e6e9ef;
     }
 
     .expense-item {
@@ -210,49 +230,82 @@
       align-items: center;
       padding: 10px;
       background: #f8fafc;
-      border-radius: 8px;
+      border-radius: 10px;
       margin-bottom: 8px;
       border: 1px solid #e6e9ef;
+      gap: 10px;
     }
 
-    .expense-details {
-      flex: 1;
-    }
-
-    .expense-amount {
-      font-weight: 700;
-      color: #1e3a5f;
-      margin: 0 15px;
-    }
+    .expense-details { flex: 1; }
+    .expense-amount { font-weight: 900; color: #1e3a5f; margin: 0 8px; white-space: nowrap; }
 
     .remove-expense {
       background: #fdecea;
       color: #b02a37;
-      padding: 5px 10px;
-      border-radius: 5px;
+      padding: 6px 10px;
+      border-radius: 8px;
       cursor: pointer;
-      font-weight: 700;
+      font-weight: 900;
+      white-space: nowrap;
     }
 
-    .submit-all-btn {
-      background: #10b981;
-      color: white;
-      margin-top: 15px;
-    }
-    .submit-all-btn:hover { opacity: 0.9; }
+    .submit-all-btn { background: #10b981; color: white; margin-top: 14px; }
+    .submit-all-btn:hover { opacity: 0.92; }
 
     .subtle { font-size: 0.85rem; color: #6c757d; margin-top: 8px; }
+
+    /* Loading overlay */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(17, 24, 39, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 9999;
+    }
+    .overlay.show { display: flex; }
+    .overlay-card {
+      width: min(420px, 92vw);
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px;
+      border: 1px solid #e6e9ef;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      text-align: center;
+    }
+    .spinner {
+      width: 42px; height: 42px;
+      border-radius: 999px;
+      border: 4px solid #e5e7eb;
+      border-top-color: #1e3a5f;
+      margin: 0 auto 12px;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .overlay-title { font-weight: 900; color: #1e3a5f; margin-bottom: 4px; }
+    .overlay-msg { color: #6b7280; font-weight: 700; }
 
     @media (max-width: 640px) {
       body { padding: 14px; }
       .row, .row-3 { grid-template-columns: 1fr; }
       .tabs { flex-direction: column; }
       .reason-item { flex-wrap: wrap; }
+      .reason-item input[type="number"] { width: 100%; }
     }
   </style>
 </head>
 
 <body>
+  <!-- Loading overlay -->
+  <div id="loadingOverlay" class="overlay">
+    <div class="overlay-card">
+      <div class="spinner"></div>
+      <div class="overlay-title" id="loadingTitle">Please wait…</div>
+      <div class="overlay-msg" id="loadingMsg">Processing</div>
+    </div>
+  </div>
+
   <div class="container">
     <!-- LOGIN -->
     <div id="loginScreen" class="card">
@@ -260,12 +313,15 @@
       <div id="loginAlert" class="alert"></div>
 
       <label>Username</label>
-      <input type="text" id="username" placeholder="Username">
+      <input type="text" id="username" placeholder="Username" autocomplete="username">
 
       <label>Password</label>
-      <input type="password" id="password" placeholder="Password">
+      <input type="password" id="password" placeholder="Password" autocomplete="current-password">
 
-      <button class="primary-btn" onclick="login()">Login</button>
+      <button class="primary-btn" id="loginBtn" onclick="login()">Login</button>
+      <div class="subtle" style="margin-top:10px;">
+        Tip: If the system is slow, wait for the “Processing…” message to finish.
+      </div>
     </div>
 
     <!-- MAIN APP -->
@@ -291,6 +347,7 @@
       <!-- ========== SECTION 1: EXPENSES ========== -->
       <div id="expenseTab" class="card">
         <h3>💰 Record Daily Expenses</h3>
+        <div class="help">Step 1: Choose category + amount → Step 2: “Add to List” → Step 3: “Submit All Expenses”.</div>
 
         <label>Expense Category</label>
         <select id="expenseCategory">
@@ -300,7 +357,7 @@
         <div class="row">
           <div>
             <label>Amount (TZS)</label>
-            <input type="number" id="expenseAmount" placeholder="Enter amount" min="1">
+            <input type="number" id="expenseAmount" placeholder="Enter amount" min="1" step="100" inputmode="numeric">
           </div>
           <div>
             <label>Payment Source</label>
@@ -311,20 +368,23 @@
           </div>
         </div>
 
-        <label>Description</label>
-        <input type="text" id="expenseComment" placeholder="e.g., Ambulance, Eye, Physiotherapy">
+        <label>Description (Optional)</label>
+        <input type="text" id="expenseComment" placeholder="Example: Ambulance, Eye, Physiotherapy">
 
-        <!-- Add to List Button -->
-        <button class="secondary-btn" onclick="addToPendingExpenses()" style="width: 100%; margin-bottom: 10px;">➕ Add to List</button>
+        <button class="secondary-btn" onclick="addToPendingExpenses()" style="width: 100%; margin-bottom: 8px;">➕ Add to List</button>
 
         <!-- Pending Expenses List -->
-        <div id="pendingExpensesContainer" style="margin-top: 20px;">
-          <h4>Pending Expenses <span id="pendingCount" style="background: #1e3a5f; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; margin-left: 10px;">0</span></h4>
+        <div id="pendingExpensesContainer" style="margin-top: 16px;">
+          <h4>
+            Pending Expenses
+            <span id="pendingCount" style="background: #1e3a5f; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; margin-left: 10px;">0</span>
+          </h4>
+
           <div id="pendingExpensesList"></div>
           <div class="subtle" id="pendingExpensesHint">No expenses added to list yet</div>
-          
-          <!-- Submit All Button -->
-          <button class="primary-btn submit-all-btn" onclick="submitAllExpenses()" id="submitAllBtn" style="margin-top: 15px;" disabled>📤 Submit All Expenses</button>
+
+          <button class="primary-btn submit-all-btn" onclick="submitAllExpenses()" id="submitAllBtn" disabled>📤 Submit All Expenses</button>
+          <div class="subtle">Important: Use “Submit All Expenses” once (wait for confirmation).</div>
         </div>
 
         <div class="divider"></div>
@@ -358,12 +418,12 @@
         </div>
 
         <label>Amount (TZS)</label>
-        <input type="number" id="pocketAmount" placeholder="Enter amount" min="1" step="1000">
+        <input type="number" id="pocketAmount" placeholder="Enter amount" min="1" step="1000" inputmode="numeric">
 
         <label>Notes (Optional)</label>
-        <input type="text" id="pocketNotes" placeholder="e.g., From sales, Director gave cash">
+        <input type="text" id="pocketNotes" placeholder="Example: From sales, Director gave cash">
 
-        <button class="primary-btn" onclick="addPocketTransaction()">Record Pocket Transaction</button>
+        <button class="primary-btn" id="pocketBtn" onclick="addPocketTransaction()">Record Pocket Transaction</button>
 
         <div class="divider"></div>
 
@@ -390,11 +450,11 @@
           <div class="row">
             <div>
               <label>System Sales Amount</label>
-              <input type="number" id="systemSales" min="0" step="1000" oninput="calculateCashDifference()">
+              <input type="number" id="systemSales" min="0" step="1000" inputmode="numeric" oninput="calculateCashDifference()">
             </div>
             <div>
               <label>Actual Cash Counted</label>
-              <input type="number" id="actualCash" min="0" step="1000" oninput="calculateCashDifference()">
+              <input type="number" id="actualCash" min="0" step="1000" inputmode="numeric" oninput="calculateCashDifference()">
             </div>
           </div>
 
@@ -404,7 +464,9 @@
           </div>
 
           <div id="cashDifferenceTracker" class="hidden">
-            <h4>Explain the Difference (Each reason reduces the difference)</h4>
+            <h4>Explain the Difference</h4>
+            <div class="help">Add reasons until remaining difference is acceptable (≤ 10,000).</div>
+
             <div id="cashReasonsList"></div>
             <button class="secondary-btn" onclick="addCashReason()" style="width: 100%; margin: 10px 0;">+ Add Reason</button>
             <div id="remainingCashDiff" class="remaining-diff"></div>
@@ -412,7 +474,7 @@
             <div class="office-cash-box">
               <div class="stat-label">Cash in Office (Available for Bank)</div>
               <div class="office-cash-amount" id="officeCash">TZS 0</div>
-              <div class="subtle">Actual Cash - Pocket Top-ups (TOPUP only)</div>
+              <div class="subtle">Formula: Actual Cash − Pocket Top-ups (TOPUP only)</div>
             </div>
           </div>
 
@@ -425,14 +487,14 @@
                 <option value="Lipa Mpesa">Lipa Mpesa</option>
                 <option value="Other">Other</option>
               </select>
-              <input type="number" class="reason-amount" placeholder="Amount" min="0" step="100" oninput="updateCashReason(this)">
+              <input type="number" class="reason-amount" placeholder="Amount" min="0" step="100" inputmode="numeric" oninput="updateCashReason(this)">
               <input type="text" class="reason-comment" placeholder="Comment" style="flex: 2;" oninput="updateCashReason(this)">
               <span class="remove-reason" onclick="removeCashReason(this)">✕</span>
             </div>
           </template>
         </div>
 
-        <button class="primary-btn" onclick="submitCashReport()" id="submitCashReportBtn" style="margin-top: 20px;" disabled>Save Cash Report</button>
+        <button class="primary-btn" onclick="submitCashReport()" id="submitCashReportBtn" style="margin-top: 18px;" disabled>Save Cash Report</button>
       </div>
 
       <!-- ========== SECTION 4: BANK DEPOSITS ========== -->
@@ -441,6 +503,7 @@
 
         <div id="pendingDepositsSummary" class="card-warning" style="margin-bottom: 20px;">
           <h4 style="margin-top: 0;">⏳ Pending Deposits</h4>
+          <div class="help">These are office cash amounts waiting to be deposited to the bank.</div>
           <div id="pendingDepositsList"></div>
           <div class="subtle" id="noPendingMsg">No pending deposits</div>
         </div>
@@ -462,25 +525,25 @@
           <div class="row">
             <div>
               <label>Amount to Deposit</label>
-              <input type="number" id="depositAmount" min="0" step="1000" oninput="calculateDepositOfficeCash()">
+              <input type="number" id="depositAmount" min="0" step="1000" inputmode="numeric" oninput="calculateDepositOfficeCash()">
             </div>
             <div>
               <label>Director Cash Given</label>
-              <input type="number" id="depositDirectorCash" min="0" step="1000" oninput="calculateDepositOfficeCash()">
+              <input type="number" id="depositDirectorCash" min="0" step="1000" inputmode="numeric" oninput="calculateDepositOfficeCash()">
             </div>
           </div>
 
           <div class="office-cash-box" style="background: #f0f9ff; padding: 15px;">
-            <div style="display: flex; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; font-weight: 900;">
               <span>Available Office Cash:</span>
-              <span style="font-size: 1.3rem; font-weight: 800;" id="availableOfficeCash">TZS 0</span>
+              <span style="font-size: 1.3rem; font-weight: 900;" id="availableOfficeCash">TZS 0</span>
             </div>
           </div>
 
           <div id="remainingAfterDeposit" class="carry-over-box hidden">
-            <strong>💰 Cash remaining in office:</strong>
-            <span style="font-size: 1.3rem; font-weight: 800; color: #f59e0b;" id="remainingOfficeCash">TZS 0</span>
-            <div class="subtle">This amount will be carried forward</div>
+            <div><strong>💰 Cash remaining in office:</strong></div>
+            <div style="font-size: 1.3rem; font-weight: 900; color: #b45309;" id="remainingOfficeCash">TZS 0</div>
+            <div class="subtle">This amount will remain pending for later deposit</div>
           </div>
 
           <div class="row">
@@ -516,9 +579,8 @@
 
     // local UI cache
     let expenses = [];
-    let pendingExpenses = []; // New array for pending expenses
+    let pendingExpenses = [];
     let pocketTransactions = [];
-    let cashReports = [];
     let bankDeposits = [];
     let pendingDeposits = [];
     let pocketBalance = 0;
@@ -526,12 +588,26 @@
     let cashReasons = [];
     let initialCashDiff = 0;
 
+    // ================== UX HELPERS ==================
+    function setOverlay(show, title = 'Please wait…', msg = 'Processing') {
+      const o = document.getElementById('loadingOverlay');
+      document.getElementById('loadingTitle').textContent = title;
+      document.getElementById('loadingMsg').textContent = msg;
+      o.classList.toggle('show', !!show);
+    }
+
+    function setBtnLoading(btnId, loading, textWhenLoading = 'Submitting…') {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+      if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent;
+      btn.disabled = !!loading;
+      btn.textContent = loading ? textWhenLoading : btn.dataset.originalText;
+    }
+
     // ================== INIT ==================
     document.addEventListener('DOMContentLoaded', async function() {
       setTodayDefaults();
-      await loadCategories();
-      await refreshTodayFromServer();
-      await loadPendingDeposits();
+      await loadCategories(); // safe to load before login
     });
 
     function setTodayDefaults() {
@@ -539,8 +615,8 @@
       const yyyy = today.getFullYear();
       const mm = String(today.getMonth() + 1).padStart(2, '0');
       const dd = String(today.getDate()).padStart(2, '0');
-
       const d = `${yyyy}-${mm}-${dd}`;
+
       document.getElementById('reportDate').value = d;
       document.getElementById('pocketDate').value = d;
       document.getElementById('depositDate').value = d;
@@ -548,25 +624,30 @@
     }
 
     // ================== API HELPERS ==================
-    async function apiCall(action, payload = {}) {
-      const body = new URLSearchParams({ action, ...payload });
+    async function apiCall(action, payload = {}, opts = { overlay: false, title: 'Please wait…', msg: 'Processing' }) {
+      if (opts?.overlay) setOverlay(true, opts.title, opts.msg);
+      try {
+        const body = new URLSearchParams({ action, ...payload });
 
-      const res = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-        body
-      });
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body
+        });
 
-      const data = await res.json();
-      if (!data.success) throw new Error(data.error || 'Request failed');
-      return data;
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'Request failed');
+        return data;
+      } finally {
+        if (opts?.overlay) setOverlay(false);
+      }
     }
 
     function showAlert(msg, type, target = 'main') {
       const el = (target === 'login') ? document.getElementById('loginAlert') : document.getElementById('mainAlert');
       el.textContent = msg;
       el.className = `alert show ${type}`;
-      setTimeout(() => el.classList.remove('show'), 3000);
+      setTimeout(() => el.classList.remove('show'), 3500);
     }
 
     function formatNumber(num) {
@@ -578,24 +659,36 @@
       const u = document.getElementById('username').value.trim();
       const p = document.getElementById('password').value;
 
-      console.log('Login attempt:', u);
-
-      if (u === 'cashier' && p === 'clinic123') {
-        currentUser = { username: u, name: u, role: 'Cashier' };
-      } else if (u === 'admin' && p === 'admin123') {
-        currentUser = { username: u, name: u, role: 'Admin' };
-      } else {
-        showAlert('Invalid username or password', 'error', 'login');
+      if (!u || !p) {
+        showAlert('Enter username and password', 'warning', 'login');
         return;
       }
 
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('mainScreen').classList.remove('hidden');
-      document.getElementById('userDisplay').textContent = `${u} (${currentUser.role})`;
+      setBtnLoading('loginBtn', true, 'Logging in…');
+      setOverlay(true, 'Logging in…', 'Checking access');
 
-      showExpense();
-      await refreshTodayFromServer();
-      await loadPendingDeposits();
+      try {
+        const record = USERS[u];
+        if (!record || record.password !== p) {
+          showAlert('Invalid username or password', 'error', 'login');
+          return;
+        }
+
+        currentUser = { username: u, name: u, role: record.role };
+
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('mainScreen').classList.remove('hidden');
+        document.getElementById('userDisplay').textContent = `${u} (${currentUser.role})`;
+
+        showExpense();
+        await refreshTodayFromServer(true);
+        await loadPendingDeposits(true);
+        updatePendingDepositsList();
+
+      } finally {
+        setOverlay(false);
+        setBtnLoading('loginBtn', false);
+      }
     };
 
     window.logout = function() {
@@ -626,7 +719,7 @@
       document.getElementById('tabCashReport').classList.remove('active');
       document.getElementById('tabBankDeposits').classList.remove('active');
 
-      await refreshTodayFromServer();
+      await refreshTodayFromServer(true);
       updatePocketHistory();
     };
 
@@ -641,7 +734,7 @@
       document.getElementById('tabCashReport').classList.add('active');
       document.getElementById('tabBankDeposits').classList.remove('active');
 
-      await refreshTodayFromServer();
+      await refreshTodayFromServer(true);
       loadCashReport();
     };
 
@@ -656,7 +749,7 @@
       document.getElementById('tabCashReport').classList.remove('active');
       document.getElementById('tabBankDeposits').classList.add('active');
 
-      await loadPendingDeposits();
+      await loadPendingDeposits(true);
       updatePendingDepositsList();
     };
 
@@ -666,7 +759,7 @@
       select.innerHTML = '<option value="">-- Select Category --</option>';
 
       try {
-        const data = await apiCall('categories');
+        const data = await apiCall('categories', {}, { overlay: false });
         (data.categories || []).forEach(cat => {
           const option = document.createElement('option');
           option.value = cat;
@@ -674,6 +767,7 @@
           select.appendChild(option);
         });
       } catch (e) {
+        // fallback if API is not reachable
         const cats = ['Ambulance', 'Eye', 'Physiotherapy', 'USS', 'Nauli', 'Ufundi', 'Mengineyo', 'CBGY', 'Lipa Number', 'WAGOWA'];
         cats.forEach(cat => {
           const option = document.createElement('option');
@@ -685,9 +779,11 @@
     }
 
     // ================== TODAY REFRESH ==================
-    async function refreshTodayFromServer() {
+    async function refreshTodayFromServer(withOverlay=false) {
+      if (!currentUser) return;
       try {
-        const data = await apiCall('today');
+        const data = await apiCall('today', {}, withOverlay ? { overlay:true, title:'Refreshing…', msg:'Loading today’s data' } : { overlay:false });
+
         const tx = data.transactions || [];
 
         expenses = tx.filter(t => t.type === 'EXPENSE').map(t => ({
@@ -698,13 +794,15 @@
           date: data.date
         }));
 
-        pocketTransactions = tx.filter(t => t.type === 'TOPUP' || t.type === 'OPENING').map(t => ({
-          date: data.date,
-          type: (t.category === 'Director' ? 'DIRECTOR' : 'TOPUP'),
-          amount: t.amount,
-          notes: t.desc,
-          balance: null
-        }));
+        // TOPUP + OPENING shown as pocket incoming
+        pocketTransactions = tx
+          .filter(t => t.type === 'TOPUP' || t.type === 'OPENING')
+          .map(t => ({
+            date: data.date,
+            type: (String(t.category || '').toLowerCase() === 'director') ? 'DIRECTOR' : 'TOPUP',
+            amount: t.amount,
+            notes: t.desc,
+          }));
 
         pocketBalance = (data.summary && typeof data.summary.pocketBalance === 'number')
           ? data.summary.pocketBalance
@@ -715,7 +813,7 @@
         updatePocketHistory();
 
       } catch (e) {
-        // ignore if not logged in yet
+        showAlert(e.message, 'error');
       }
     }
 
@@ -726,8 +824,14 @@
       const source = document.getElementById('expenseSource').value;
       const desc = document.getElementById('expenseComment').value.trim();
 
-      if (!category || !amount) {
-        showAlert('Please select category and enter amount', 'error');
+      if (!category) {
+        showAlert('Select expense category', 'warning');
+        document.getElementById('expenseCategory').focus();
+        return;
+      }
+      if (!amount || amount <= 0) {
+        showAlert('Enter a valid amount', 'warning');
+        document.getElementById('expenseAmount').focus();
         return;
       }
 
@@ -739,12 +843,13 @@
       });
 
       renderPendingExpenses();
-      
-      // Clear form
+
+      // Clear form + focus for speed
       document.getElementById('expenseCategory').value = '';
       document.getElementById('expenseAmount').value = '';
       document.getElementById('expenseComment').value = '';
-      
+      document.getElementById('expenseCategory').focus();
+
       showAlert('Added to pending list', 'success');
     };
 
@@ -770,10 +875,12 @@
         <div class="expense-item">
           <div class="expense-details">
             <strong>${exp.category}</strong>
-            <div style="font-size: 0.8rem; color: #666;">${exp.source} - ${exp.description}</div>
+            <div style="font-size: 0.82rem; color: #666; margin-top:2px;">
+              Source: <strong>${exp.source}</strong> • ${exp.description}
+            </div>
           </div>
           <div class="expense-amount">TZS ${formatNumber(exp.amount)}</div>
-          <span class="remove-expense" onclick="removePendingExpense(${index})">✕</span>
+          <span class="remove-expense" onclick="removePendingExpense(${index})">Remove</span>
         </div>
       `).join('');
     }
@@ -784,28 +891,30 @@
     };
 
     window.submitAllExpenses = async function() {
-      if (pendingExpenses.length === 0) {
-        showAlert('No pending expenses to submit', 'error');
-        return;
-      }
+      if (!currentUser) { showAlert('Please login', 'error'); return; }
+      if (pendingExpenses.length === 0) { showAlert('No pending expenses to submit', 'warning'); return; }
+
+      // prevent double submit
+      document.getElementById('submitAllBtn').disabled = true;
 
       try {
-        const result = await apiCall('bulkAdd', {
+        const payload = {
           expenses: JSON.stringify(pendingExpenses),
           cashier: currentUser?.name || 'Unknown'
-        });
+        };
 
-        showAlert(`Successfully submitted ${result.count || pendingExpenses.length} expenses`, 'success');
-        
-        // Clear pending expenses
+        const result = await apiCall('bulkAdd', payload, { overlay:true, title:'Submitting…', msg:`Sending ${pendingExpenses.length} expenses to Google Sheet` });
+
+        showAlert(`Submitted ${result.count || pendingExpenses.length} expenses successfully`, 'success');
+
         pendingExpenses = [];
         renderPendingExpenses();
-        
-        // Refresh today's expenses
-        await refreshTodayFromServer();
-        
+
+        await refreshTodayFromServer(true);
       } catch (e) {
         showAlert(e.message, 'error');
+        // re-enable button if still has data
+        document.getElementById('submitAllBtn').disabled = pendingExpenses.length === 0;
       }
     };
 
@@ -822,12 +931,12 @@
       hint.style.display = 'none';
 
       el.innerHTML = expenses.map(e => `
-        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee; gap:10px;">
           <div>
             <strong>${e.category}</strong>
-            <div style="font-size:0.8rem; color:#666;">${e.source} - ${e.desc || ''}</div>
+            <div style="font-size:0.82rem; color:#666; margin-top:2px;">${e.source} • ${e.desc || ''}</div>
           </div>
-          <div style="font-weight:700;">TZS ${formatNumber(e.amount)}</div>
+          <div style="font-weight:900; white-space:nowrap;">TZS ${formatNumber(e.amount)}</div>
         </div>
       `).join('');
     }
@@ -840,9 +949,12 @@
       const notes = document.getElementById('pocketNotes').value.trim();
 
       if (!amount || amount <= 0) {
-        showAlert('Enter valid amount', 'error');
+        showAlert('Enter valid amount', 'warning');
+        document.getElementById('pocketAmount').focus();
         return;
       }
+
+      setBtnLoading('pocketBtn', true, 'Saving…');
 
       try {
         await apiCall('add', {
@@ -852,19 +964,21 @@
           description: notes || (type === 'DIRECTOR' ? 'Director top-up' : 'Top-up from sales'),
           source: 'POCKET',
           cashier: currentUser?.name || 'Unknown'
-        });
+        }, { overlay:true, title:'Saving…', msg:'Recording pocket transaction' });
 
         document.getElementById('pocketAmount').value = '';
         document.getElementById('pocketNotes').value = '';
 
-        showAlert('Pocket transaction saved to Sheet', 'success');
-        await refreshTodayFromServer();
+        showAlert('Pocket transaction saved', 'success');
+        await refreshTodayFromServer(true);
 
         if (!document.getElementById('cashReportTab').classList.contains('hidden')) {
           calculateOfficeCash();
         }
       } catch (e) {
         showAlert(e.message, 'error');
+      } finally {
+        setBtnLoading('pocketBtn', false);
       }
     };
 
@@ -881,12 +995,12 @@
       }
 
       el.innerHTML = pocketTransactions.map(t => `
-        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee; gap:10px;">
           <div>
             <strong>${t.type}</strong>
-            <div style="font-size:0.8rem; color:#666;">${t.date} - ${t.notes || ''}</div>
+            <div style="font-size:0.82rem; color:#666; margin-top:2px;">${t.date} • ${t.notes || ''}</div>
           </div>
-          <div style="font-weight:700; color:#10b981">+ TZS ${formatNumber(t.amount)}</div>
+          <div style="font-weight:900; color:#10b981; white-space:nowrap;">+ TZS ${formatNumber(t.amount)}</div>
         </div>
       `).join('');
     }
@@ -968,7 +1082,6 @@
     function updateRemainingCashDiff() {
       const totalReasonAmount = cashReasons.reduce((sum, r) => sum + (r.amount || 0), 0);
       const remaining = Math.abs(initialCashDiff) - totalReasonAmount;
-
       const remainingEl = document.getElementById('remainingCashDiff');
 
       if (initialCashDiff === 0) {
@@ -1003,7 +1116,7 @@
 
       const pocketTopups = pocketTransactions
         .filter(t => t.date === today && t.type === 'TOPUP')
-        .reduce((sum, t) => sum + t.amount, 0);
+        .reduce((sum, t) => sum + (t.amount || 0), 0);
 
       const officeCash = actualCash - pocketTopups;
       document.getElementById('officeCash').textContent = 'TZS ' + formatNumber(Math.max(0, officeCash));
@@ -1013,10 +1126,18 @@
     function checkCashReportSubmit() {
       const submitBtn = document.getElementById('submitCashReportBtn');
 
-      const systemSales = Number(document.getElementById('systemSales').value);
-      const actualCash = Number(document.getElementById('actualCash').value);
+      const systemSalesVal = document.getElementById('systemSales').value;
+      const actualCashVal = document.getElementById('actualCash').value;
 
-      if (!(systemSales >= 0) || !(actualCash >= 0) || (document.getElementById('systemSales').value === '' || document.getElementById('actualCash').value === '')) {
+      if (systemSalesVal === '' || actualCashVal === '') {
+        submitBtn.disabled = true;
+        return;
+      }
+
+      const systemSales = Number(systemSalesVal);
+      const actualCash = Number(actualCashVal);
+
+      if (Number.isNaN(systemSales) || Number.isNaN(actualCash) || systemSales < 0 || actualCash < 0) {
         submitBtn.disabled = true;
         return;
       }
@@ -1030,6 +1151,10 @@
     }
 
     window.submitCashReport = async function() {
+      if (!currentUser) { showAlert('Please login', 'error'); return; }
+
+      setBtnLoading('submitCashReportBtn', true, 'Saving…');
+
       try {
         const officeCash = calculateOfficeCash();
         const date = document.getElementById('reportDate').value;
@@ -1041,9 +1166,9 @@
           cashReasons: JSON.stringify(cashReasons),
           officeCash: String(officeCash),
           cashier: currentUser?.name || 'Unknown'
-        });
+        }, { overlay:true, title:'Saving…', msg:'Recording cash report' });
 
-        showAlert('Cash report saved to Sheet', 'success');
+        showAlert('Cash report saved', 'success');
 
         // Clear
         document.getElementById('systemSales').value = '';
@@ -1054,11 +1179,14 @@
         initialCashDiff = 0;
         document.getElementById('initialDifference').textContent = 'TZS 0';
 
-        await loadPendingDeposits();
+        await loadPendingDeposits(true);
         updatePendingDepositsList();
 
       } catch (e) {
         showAlert(e.message, 'error');
+      } finally {
+        setBtnLoading('submitCashReportBtn', false);
+        checkCashReportSubmit();
       }
     };
 
@@ -1074,9 +1202,10 @@
     };
 
     // ================== PENDING DEPOSITS ==================
-    async function loadPendingDeposits() {
+    async function loadPendingDeposits(withOverlay=false) {
+      if (!currentUser) return;
       try {
-        const data = await apiCall('getPendingDeposits');
+        const data = await apiCall('getPendingDeposits', {}, withOverlay ? { overlay:true, title:'Loading…', msg:'Fetching pending deposits' } : { overlay:false });
         pendingDeposits = data.pending || [];
       } catch (e) {
         pendingDeposits = [];
@@ -1098,9 +1227,9 @@
         <div class="pending-deposit-item">
           <div>
             <strong>From: ${d.originalDate}</strong>
-            <div>Amount: TZS ${formatNumber(d.amount)}</div>
+            <div style="margin-top:2px;">Amount: <strong>TZS ${formatNumber(d.amount)}</strong></div>
           </div>
-          <span style="background:#f59e0b; color:white; padding:4px 8px; border-radius:12px;">
+          <span style="background:#f59e0b; color:white; padding:5px 10px; border-radius:999px; font-weight:900;">
             ${d.status || 'PENDING'}
           </span>
         </div>
@@ -1129,6 +1258,8 @@
     };
 
     window.recordBankDeposit = async function() {
+      if (!currentUser) { showAlert('Please login', 'error'); return; }
+
       const depositDate = document.getElementById('depositDate').value;
       const originalDate = document.getElementById('originalCashDate').value;
       const amount = Number(document.getElementById('depositAmount').value) || 0;
@@ -1136,7 +1267,7 @@
       const status = document.getElementById('depositCompleteStatus').value;
 
       if (!amount && !directorCash) {
-        showAlert('Enter amount to deposit or director cash', 'error');
+        showAlert('Enter amount to deposit or director cash', 'warning');
         return;
       }
 
@@ -1154,6 +1285,8 @@
         return;
       }
 
+      setBtnLoading('recordDepositBtn', true, 'Saving…');
+
       try {
         await apiCall('recordBankDeposit', {
           depositDate,
@@ -1163,7 +1296,7 @@
           status,
           remaining: String(remaining),
           cashier: currentUser?.name || 'Unknown'
-        });
+        }, { overlay:true, title:'Saving…', msg:'Recording bank deposit' });
 
         bankDeposits.push({ depositDate, originalDate, amount, directorCash, status, remaining });
         renderDepositHistory();
@@ -1172,12 +1305,14 @@
         document.getElementById('depositDirectorCash').value = '';
         document.getElementById('remainingAfterDeposit').classList.add('hidden');
 
-        showAlert('Bank deposit saved to Sheet', 'success');
+        showAlert('Bank deposit saved', 'success');
 
-        await loadPendingDeposits();
+        await loadPendingDeposits(true);
         updatePendingDepositsList();
       } catch (e) {
         showAlert(e.message, 'error');
+      } finally {
+        setBtnLoading('recordDepositBtn', false);
       }
     };
 
@@ -1188,12 +1323,12 @@
         return;
       }
       el.innerHTML = bankDeposits.map(d => `
-        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+        <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee; gap:10px;">
           <div>
             <strong>${d.status}</strong>
-            <div style="font-size:0.8rem; color:#666;">Deposit: ${d.depositDate} | From: ${d.originalDate}</div>
+            <div style="font-size:0.82rem; color:#666; margin-top:2px;">Deposit: ${d.depositDate} • From: ${d.originalDate}</div>
           </div>
-          <div style="font-weight:700;">TZS ${formatNumber(d.amount)}</div>
+          <div style="font-weight:900; white-space:nowrap;">TZS ${formatNumber(d.amount)}</div>
         </div>
       `).join('');
     }
