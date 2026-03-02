@@ -533,7 +533,7 @@
   </div>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzF9cqcuA6G_mHh4yVisv2-5eNyx2GwhNaLqEk444yizaCdWPsfdtQ4LEO6a40BelVH/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzbiySAcECIgXf99hqImBlMLlgqfeTn4Oe4LhZAuirrcAwj8NvaKOkrgkP5bgq9zFjV/exec';
 
     const USERS = {
       cashier: { password: 'clinic123', role: 'Cashier' },
@@ -862,4 +862,432 @@
       const category = document.getElementById('expenseCategory').value;
       const amount = parseMoney(document.getElementById('expenseAmount').value);
       const source = document.getElementById('expenseSource').value;
-      const desc = document.getElementById('expenseComment').value
+      const desc = document.getElementById('expenseComment').value.trim();
+
+      if (!category || !amount) {
+        showAlert('Please select category and enter amount', 'error');
+        return;
+      }
+
+      pendingExpenses.push({
+        category,
+        amount,
+        source,
+        description: desc || category
+      });
+
+      renderPendingExpenses();
+
+      document.getElementById('expenseCategory').value = '';
+      document.getElementById('expenseAmount').value = '';
+      document.getElementById('expenseComment').value = '';
+
+      showAlert('Added to pending list', 'success');
+    };
+
+    function renderPendingExpenses() {
+      const listEl = document.getElementById('pendingExpensesList');
+      const hintEl = document.getElementById('pendingExpensesHint');
+      const countEl = document.getElementById('pendingCount');
+      const submitBtn = document.getElementById('submitAllBtn');
+
+      if (pendingExpenses.length === 0) {
+        listEl.innerHTML = '';
+        hintEl.style.display = 'block';
+        countEl.textContent = '0';
+        submitBtn.disabled = true;
+        return;
+      }
+
+      hintEl.style.display = 'none';
+      countEl.textContent = pendingExpenses.length;
+      submitBtn.disabled = false;
+
+      listEl.innerHTML = pendingExpenses.map((exp, index) => `
+        <div class="expense-item">
+          <div class="expense-details">
+            <strong>${exp.category}</strong>
+            <div style="font-size: 0.8rem; color: #666;">${exp.source} - ${exp.description}</div>
+          </div>
+          <div class="expense-amount">TZS ${formatNumber(exp.amount)}</div>
+          <span class="remove-expense" onclick="removePendingExpense(${index})">✕</span>
+        </div>
+      `).join('');
+    }
+
+    window.removePendingExpense = function(index) {
+      pendingExpenses.splice(index, 1);
+      renderPendingExpenses();
+    };
+
+    window.submitAllExpenses = async function() {
+      if (pendingExpenses.length === 0) {
+        showAlert('No pending expenses to submit', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('submitAllBtn');
+      btn.disabled = true;
+
+      try {
+        await apiCall('bulkAdd', {
+          expenses: JSON.stringify(pendingExpenses),
+          cashier: currentUser?.name || 'Unknown'
+        }, true, 'Submitting…', 'Saving all expenses');
+
+        pendingExpenses = [];
+        renderPendingExpenses();
+
+        await refreshTodayFromServer(false);
+        await refreshBalances(false);
+
+        showAlert('Successfully submitted expenses', 'success');
+      } catch (e) {
+        showAlert(e.message, 'error');
+        btn.disabled = false;
+      }
+    };
+
+    // ---------- Render expenses ----------
+    function renderExpenses() {
+      const el = document.getElementById('expenseList');
+      const hint = document.getElementById('expenseHint');
+
+      if (expenses.length === 0) {
+        el.innerHTML = '';
+        hint.style.display = 'block';
+        return;
+      }
+      hint.style.display = 'none';
+
+      el.innerHTML = expenses.map(e => `
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+          <div>
+            <strong>${e.category}</strong>
+            <div style="font-size:0.8rem; color:#666;">${e.source} - ${e.desc || ''}</div>
+          </div>
+          <div style="font-weight:700;">TZS ${formatNumber(e.amount)}</div>
+        </div>
+      `).join('');
+    }
+
+    // ---------- Pocket ----------
+    window.addPocketTransaction = async function() {
+      const type = document.getElementById('pocketType').value;
+      const amount = parseMoney(document.getElementById('pocketAmount').value);
+      const notes = document.getElementById('pocketNotes').value.trim();
+
+      if (!amount || amount <= 0) {
+        showAlert('Enter valid amount', 'error');
+        return;
+      }
+
+      const btn = document.getElementById('pocketBtn');
+      btn.disabled = true;
+
+      try {
+        const category = (type === 'DIRECTOR') ? 'Director Topup' : 'Sales Topup';
+        
+        await apiCall('add', {
+          type: 'TOPUP',
+          category: category,
+          amount: String(amount),
+          description: notes || (type === 'DIRECTOR' ? 'Director top-up' : 'Top-up from sales'),
+          source: 'POCKET',
+          cashier: currentUser?.name || 'Unknown'
+        }, true, 'Saving…', 'Recording pocket transaction');
+
+        document.getElementById('pocketAmount').value = '';
+        document.getElementById('pocketNotes').value = '';
+
+        await refreshTodayFromServer(false);
+        await refreshBalances(false);
+
+        showAlert('Pocket transaction saved to Sheet', 'success');
+      } catch (e) {
+        showAlert(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    function updatePocketHistory() {
+      const el = document.getElementById('pocketHistory');
+
+      if (pocketTransactions.length === 0) {
+        el.innerHTML = '<div class="subtle">No transactions yet</div>';
+        return;
+      }
+
+      el.innerHTML = pocketTransactions.map(t => `
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+          <div>
+            <strong>${t.type}</strong>
+            <div style="font-size:0.8rem; color:#666;">${t.date} - ${t.notes || ''}</div>
+          </div>
+          <div style="font-weight:700; color:#10b981">+ TZS ${formatNumber(t.amount)}</div>
+        </div>
+      `).join('');
+    }
+
+    // ---------- Cash report ----------
+    window.calculateCashDifference = function() {
+      const systemSales = parseMoney(document.getElementById('systemSales').value) || 0;
+      const actualCash = parseMoney(document.getElementById('actualCash').value) || 0;
+
+      initialCashDiff = actualCash - systemSales;
+      document.getElementById('initialDifference').textContent = 'TZS ' + formatNumber(initialCashDiff);
+
+      const diffBox = document.getElementById('initialDifferenceBox');
+      const tracker = document.getElementById('cashDifferenceTracker');
+
+      diffBox.classList.remove('card-danger', 'card-success');
+      if (document.getElementById('systemSales').value === '' || document.getElementById('actualCash').value === '') {
+        tracker.classList.add('hidden');
+        document.getElementById('submitCashReportBtn').disabled = true;
+        return;
+      }
+
+      tracker.classList.remove('hidden');
+      diffBox.classList.add(initialCashDiff >= 0 ? 'card-success' : 'card-danger');
+
+      document.getElementById('officeCash').textContent = 'TZS ' + formatNumber(officeCashServer);
+
+      updateRemainingCashDiff();
+    };
+
+    window.addCashReason = function() {
+      cashReasons.push({ reason: '', amount: 0, comment: '' });
+      renderCashReasons();
+    };
+
+    function renderCashReasons() {
+      const list = document.getElementById('cashReasonsList');
+      const template = document.getElementById('cashReasonTemplate');
+
+      list.innerHTML = '';
+      cashReasons.forEach((r, index) => {
+        const clone = document.importNode(template.content, true);
+
+        const select = clone.querySelector('.reason-select');
+        select.value = r.reason;
+        select.dataset.index = index;
+
+        const amount = clone.querySelector('.reason-amount');
+        amount.value = r.amount ? formatNumber(r.amount) : '';
+        amount.dataset.index = index;
+
+        const comment = clone.querySelector('.reason-comment');
+        comment.value = r.comment || '';
+        comment.dataset.index = index;
+
+        list.appendChild(clone);
+      });
+
+      updateRemainingCashDiff();
+    }
+
+    window.updateCashReason = function(element) {
+      const idx = Number(element.dataset.index);
+      if (Number.isNaN(idx) || !cashReasons[idx]) return;
+
+      if (element.classList.contains('reason-select')) cashReasons[idx].reason = element.value;
+      if (element.classList.contains('reason-amount')) {
+        const rawValue = element.value.replace(/,/g, '');
+        cashReasons[idx].amount = Number(rawValue) || 0;
+        element.value = cashReasons[idx].amount ? formatNumber(cashReasons[idx].amount) : '';
+      }
+      if (element.classList.contains('reason-comment')) cashReasons[idx].comment = element.value || '';
+
+      updateRemainingCashDiff();
+    };
+
+    window.removeCashReason = function(button) {
+      const select = button.closest('.reason-item')?.querySelector('.reason-select');
+      const idx = Number(select?.dataset.index);
+      if (!Number.isNaN(idx)) cashReasons.splice(idx, 1);
+      renderCashReasons();
+    };
+
+    function updateRemainingCashDiff() {
+      const totalReasonAmount = cashReasons.reduce((sum, r) => sum + (r.amount || 0), 0);
+      const remaining = Math.abs(initialCashDiff) - totalReasonAmount;
+
+      const remainingEl = document.getElementById('remainingCashDiff');
+      const ok = remaining <= 10000;
+
+      if (initialCashDiff < 0) {
+        remainingEl.innerHTML = ok
+          ? `✅ Loss explained: TZS ${formatNumber(totalReasonAmount)} (remaining TZS ${formatNumber(remaining)} acceptable)`
+          : `⚠️ Unexplained loss: TZS ${formatNumber(remaining)}`;
+      } else {
+        remainingEl.innerHTML = ok
+          ? `✅ Extra cash explained: TZS ${formatNumber(totalReasonAmount)} (remaining TZS ${formatNumber(remaining)} acceptable)`
+          : `⚠️ Unexplained extra: TZS ${formatNumber(remaining)}`;
+      }
+
+      remainingEl.style.background = ok ? '#f0fdf4' : '#fff5f5';
+      remainingEl.style.color = ok ? '#10b981' : '#ef4444';
+
+      checkCashReportSubmit();
+    }
+
+    function checkCashReportSubmit() {
+      const submitBtn = document.getElementById('submitCashReportBtn');
+      const systemSalesFilled = document.getElementById('systemSales').value !== '';
+      const actualCashFilled = document.getElementById('actualCash').value !== '';
+
+      if (!systemSalesFilled || !actualCashFilled) { 
+        submitBtn.disabled = true; 
+        return;
+      }
+
+      if (initialCashDiff === 0) { 
+        submitBtn.disabled = false; 
+        return;
+      }
+
+      const totalReasonAmount = cashReasons.reduce((sum, r) => sum + (r.amount || 0), 0);
+      const remaining = Math.abs(initialCashDiff) - totalReasonAmount;
+
+      submitBtn.disabled = remaining > 10000;
+    }
+
+    window.submitCashReport = async function() {
+      const btn = document.getElementById('submitCashReportBtn');
+      btn.disabled = true;
+
+      try {
+        const date = document.getElementById('reportDate').value;
+
+        await apiCall('saveCashReport', {
+          date,
+          systemSales: String(parseMoney(document.getElementById('systemSales').value) || 0),
+          actualCash: String(parseMoney(document.getElementById('actualCash').value) || 0),
+          cashReasons: JSON.stringify(cashReasons),
+          cashier: currentUser?.name || 'Unknown'
+        }, true, 'Saving…', 'Saving cash report');
+
+        showAlert('Cash report saved to Sheet', 'success');
+
+        document.getElementById('systemSales').value = '';
+        document.getElementById('actualCash').value = '';
+        document.getElementById('cashDifferenceTracker').classList.add('hidden');
+        cashReasons = [];
+        renderCashReasons();
+        initialCashDiff = 0;
+        document.getElementById('initialDifference').textContent = 'TZS 0';
+
+        await refreshBalances(false);
+        await loadPendingDeposits(false);
+        updatePendingDepositsList();
+
+      } catch (e) {
+        showAlert(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    window.loadCashReport = async function() {
+      cashReasons = [];
+      renderCashReasons();
+      document.getElementById('systemSales').value = '';
+      document.getElementById('actualCash').value = '';
+      document.getElementById('cashDifferenceTracker').classList.add('hidden');
+      initialCashDiff = 0;
+      document.getElementById('initialDifference').textContent = 'TZS 0';
+      await refreshBalances(true);
+      checkCashReportSubmit();
+    };
+
+    // ---------- Bank deposits ----------
+    window.calculateDepositOfficeCash = function() {
+      const availableCash = officeCashServer;
+      document.getElementById('availableOfficeCash').textContent = 'TZS ' + formatNumber(availableCash);
+
+      const depositAmount = parseMoney(document.getElementById('depositAmount').value) || 0;
+      const directorCash = parseMoney(document.getElementById('depositDirectorCash').value) || 0;
+
+      const remaining = availableCash - depositAmount - directorCash;
+
+      if (remaining >= 0) {
+        document.getElementById('remainingAfterDeposit').classList.remove('hidden');
+        document.getElementById('remainingOfficeCash').textContent = 'TZS ' + formatNumber(remaining);
+      } else {
+        document.getElementById('remainingAfterDeposit').classList.add('hidden');
+      }
+    };
+
+    window.recordBankDeposit = async function() {
+      const btn = document.getElementById('recordDepositBtn');
+      btn.disabled = true;
+
+      try {
+        const depositDate = document.getElementById('depositDate').value;
+        const originalDate = document.getElementById('originalCashDate').value;
+        const amount = parseMoney(document.getElementById('depositAmount').value) || 0;
+        const directorCash = parseMoney(document.getElementById('depositDirectorCash').value) || 0;
+        const status = document.getElementById('depositCompleteStatus').value;
+
+        if (!amount && !directorCash) {
+          showAlert('Enter amount to deposit or director cash', 'error');
+          btn.disabled = false;
+          return;
+        }
+
+        if ((amount + directorCash) > officeCashServer) {
+          showAlert('You cannot deposit more than available office cash', 'error');
+          btn.disabled = false;
+          return;
+        }
+
+        await apiCall('recordBankDeposit', {
+          depositDate,
+          originalDate,
+          depositAmount: String(amount),
+          directorCash: String(directorCash),
+          status,
+          remaining: String(Math.max(0, officeCashServer - amount - directorCash)),
+          cashier: currentUser?.name || 'Unknown'
+        }, true, 'Saving…', 'Recording deposit');
+
+        bankDeposits.push({ depositDate, originalDate, amount, directorCash, status });
+        renderDepositHistory();
+
+        document.getElementById('depositAmount').value = '';
+        document.getElementById('depositDirectorCash').value = '';
+        document.getElementById('remainingAfterDeposit').classList.add('hidden');
+
+        showAlert('Bank deposit saved to Sheet', 'success');
+
+        await refreshBalances(false);
+        await loadPendingDeposits(false);
+        updatePendingDepositsList();
+        calculateDepositOfficeCash();
+      } catch (e) {
+        showAlert(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    };
+
+    function renderDepositHistory() {
+      const el = document.getElementById('depositHistory');
+      if (bankDeposits.length === 0) {
+        el.innerHTML = '<div class="subtle">No deposits recorded yet</div>';
+        return;
+      }
+      el.innerHTML = bankDeposits.map(d => `
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+          <div>
+            <strong>${d.status}</strong>
+            <div style="font-size:0.8rem; color:#666;">Deposit: ${d.depositDate} | From: ${d.originalDate}</div>
+          </div>
+          <div style="font-weight:700;">TZS ${formatNumber(d.amount)}</div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
